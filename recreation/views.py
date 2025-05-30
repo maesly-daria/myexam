@@ -13,7 +13,7 @@ from django.db import transaction
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.utils.text import slugify
-from .models import Post, Client, House, Review, Service, Booking, BookingService, Employee, Tag
+from .models import Post, Client, House, Review, Service, Booking, BookingService, Employee, Tag, DZexam
 from .forms import PostForm, ClientRegistrationForm, ReviewForm, ClientProfileForm, HouseForm, BookingForm, CustomUserCreationForm, CustomUserChangeForm, EmailPhoneAuthForm, CustomAuthenticationForm, ClientForm, UserProfileForm
 from django.conf import settings
 from rest_framework.views import APIView
@@ -640,3 +640,11 @@ def edit_post(request, post_id):
     # Проверка прав ТОЛЬКО здесь, внутри функции!
     if not (request.user == post.author or request.user.is_superuser):
         raise PermissionDenied("У вас нет прав для редактирования этого поста")
+    
+def dzexam_view(request):
+    exams = DZexam.objects.filter(is_public=True)
+    return render(request, 'dzexam.html', {
+        'exams': exams,
+        'fio': 'Змеева Дарья Васильевна',
+        'group': 'Группа 231-365'
+    })

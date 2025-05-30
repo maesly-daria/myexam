@@ -41,6 +41,7 @@ urlpatterns = [
     path('reviews/<int:pk>/edit/', views.update_review, name='review_edit'),
     path('reviews/<int:pk>/delete/', delete_review, name='review_delete'),
     path('reviews/', views.all_reviews, name='all_reviews'),
+    path('DZexam/', views.dzexam_view, name='dzexam'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) \
   + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
