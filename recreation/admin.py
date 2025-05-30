@@ -4,7 +4,7 @@ from django.urls import path
 from django.utils.html import format_html
 from django.template.loader import render_to_string
 from weasyprint import HTML, CSS
-from .models import Client, House, Facility, Review, Employee, Position, Booking, Event, Service, BookingService, Payment, Post, Tag, PostTag, CustomUser
+from .models import Client, House, Facility, Review, Employee, Position, Booking, Event, Service, BookingService, Payment, Post, Tag, PostTag, CustomUser, DZexam
 from django.contrib.auth.admin import UserAdmin
 from django.conf import settings
 from ckeditor.widgets import CKEditorWidget
@@ -412,3 +412,17 @@ class TagAdmin(admin.ModelAdmin):
     verbose_name_plural = _('Теги')
 
 admin.site.register(Post, PostAdmin)
+
+@admin.register(DZexam)
+class DZexamAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at', 'exam_date', 'is_public')
+    search_fields = ('title', 'users__email')
+    list_filter = ('is_public', 'created_at')
+    filter_horizontal = ('users',)
+    date_hierarchy = 'exam_date'
+    
+    @admin.display(description='Изображение')
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="max-height: 50px;" />', obj.image.url)
+        return "-"
