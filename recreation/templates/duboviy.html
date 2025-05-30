@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дом "Дубовый" - База отдыха FurTree</title>
+    {% load static %}
+    <link rel="icon" href="{% static 'images/logotip.png' %}" type="image/x-icon">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
+    <style>
+        :root {
+            --primary-color: #864421;
+            --secondary-color: #f7efe2;
+            --text-color: #333;
+            --light-text: #fff;
+            --dark-brown: #5a2d0c;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+        }
+
+        /* Header */
+        .navbar {
+            background-color: var(--secondary-color) !important;
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand img {
+            height: 80px;
+            transition: var(--transition);
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--primary-color) !important;
+            font-weight: 500;
+            font-size: 18px;
+            padding: 10px 15px;
+            transition: var(--transition);
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--dark-brown) !important;
+            transform: translateY(-2px);
+        }
+
+        /* Cottage Page */
+        .cottage-header {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('{% static "images/duboviy.jpg" %}') no-repeat center center;
+            background-size: cover;
+            height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--light-text);
+            margin-bottom: 50px;
+        }
+
+        .cottage-title {
+            font-size: 48px;
+            font-weight: 700;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .cottage-section {
+            padding: 80px 0;
+        }
+
+        .cottage-description {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .amenities-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .amenities-list li {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .amenities-list li:before {
+            content: "\f00c";
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            color: var(--primary-color);
+            position: absolute;
+            left: 0;
+        }
+
+        .gallery-item {
+            margin-bottom: 30px;
+            transition: var(--transition);
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .price-box {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .price {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 20px 0;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: 500;
+            border-radius: 30px;
+            transition: var(--transition);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--dark-brown);
+            border-color: var(--dark-brown);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Modal */
+        .modal-content {
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: var(--primary-color);
+            color: var(--light-text);
+            padding: 60px 0 30px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .cottage-title {
+                font-size: 36px;
+            }
+            
+            .cottage-header {
+                height: 40vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <img src="{% static 'images/logotip.png' %}" alt="FurTree Logo">
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}">Главная</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Коттеджи</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Бронирование</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Отзывы</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">О нас</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Личный кабинет</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Cottage Header -->
+    <div class="cottage-header">
+        <div class="container">
+            <h1 class="cottage-title">ДОМ "ДУБОВЫЙ"</h1>
+        </div>
+    </div>
+
+    <!-- Cottage Content -->
+    <section class="cottage-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <h2 class="mb-4">Описание</h2>
+                    <p class="cottage-description">
+                        Улучшенный дом-коттедж: "Дубовый" – это однокомнатный дом с ванной комнатой.
+                        Площадь дома – 27 кв.м. Вместимость: до 4х человек (2 кровати, 1 ванная комната).
+                    </p>
+                    
+                    <h3 class="mb-3">Оснащение:</h3>
+                    <ul class="amenities-list">
+                        <li>Две односпальные кровати</li>
+                        <li>Столик с диваном</li>
+                        <li>Кухня с духовкой и плитой</li>
+                        <li>Зеркало, шкаф</li>
+                        <li>Холодильник, письменный столик</li>
+                        <li>Светильники, телевизор</li>
+                        <li>Wi-Fi, кондиционер</li>
+                        <li>Чайный сет, фен</li>
+                        <li>Минеральная вода, тапочки</li>
+                        <li>Ванные принадлежности</li>
+                    </ul>
+                    
+                    <div class="row mt-5 gallery">
+                        <div class="col-md-4">
+                            <a href="{% static 'images/duboviy-1.jpg' %}" data-lightbox="duboviy-gallery" data-title="Дом 'Дубовый' - интерьер">
+                                <img src="{% static 'images/duboviy-1.jpg' %}" alt="Интерьер" class="img-fluid rounded gallery-item">
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% static 'images/duboviy-2.jpg' %}" data-lightbox="duboviy-gallery" data-title="Дом 'Дубовый' - вид снаружи">
+                                <img src="{% static 'images/duboviy-2.jpg' %}" alt="Вид снаружи" class="img-fluid rounded gallery-item">
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% static 'images/chan.jpg' %}" data-lightbox="duboviy-gallery" data-title="Банный чан рядом с домом">
+                                <img src="{% static 'images/chan.jpg' %}" alt="Банный чан" class="img-fluid rounded gallery-item">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="price-box sticky-top" style="top: 100px;">
+                        <h3>Стоимость проживания</h3>
+                        <div class="price">5 000 руб./сут.</div>
+                        <button class="btn btn-primary btn-block" data-toggle="modal" data-target="#bookingModal">
+                            Забронировать
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Modal -->
+    <div class="modal fade" id="bookingModal" tabindex="-1" role="dialog" aria-labelledby="bookingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h3 class="text-center mb-4">Бронирование коттеджа "Дубовый"</h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <img src="{% static 'images/duboviy.jpg' %}" alt="Дубовый" class="img-fluid rounded">
+                        </div>
+                        <div class="col-md-6">
+                            <form>
+                                <div class="form-group">
+                                    <label>Дата заезда</label>
+                                    <input type="date" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Дата выезда</label>
+                                    <input type="date" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Количество гостей</label>
+                                    <div class="guest-counter">
+                                        <button type="button" class="btn btn-outline-secondary decrement-btn">-</button>
+                                        <input type="text" value="2" min="1" max="4" class="form-control text-center guest-count" readonly>
+                                        <button type="button" class="btn btn-outline-secondary increment-btn">+</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Ваше имя</label>
+                                    <input type="text" class="form-control" placeholder="Введите ваше имя">
+                                </div>
+                                <div class="form-group">
+                                    <label>Телефон</label>
+                                    <input type="tel" class="form-control" placeholder="+7 (999) 999-99-99">
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block mt-4">Отправить заявку</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <img src="{% static 'images/logotip.png' %}" alt="FurTree Logo" width="150" class="mb-3">
+                    <p>© 2023 База отдыха FurTree. Все права защищены.</p>
+                </div>
+                <div class="col-md-6 text-right">
+                    <p><i class="fas fa-phone-alt mr-2"></i> +7 (977) 777-77-77</p>
+                    <p><i class="fas fa-map-marker-alt mr-2"></i> Свердловская область, д. Савина</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            // Guest counter in modal
+            $('.increment-btn').click(function() {
+                var input = $(this).siblings('.guest-count');
+                var value = parseInt(input.val());
+                if (value < 4) { // Максимум 4 гостя для этого коттеджа
+                    input.val(value + 1);
+                }
+            });
+            
+            $('.decrement-btn').click(function() {
+                var input = $(this).siblings('.guest-count');
+                var value = parseInt(input.val());
+                if (value > 1) {
+                    input.val(value - 1);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

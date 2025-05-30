@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Бронирование | База отдыха FurTree</title>
+    {% load static %}
+    <link rel="icon" href="{% static 'images/logotip.png' %}" type="image/x-icon">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #864421;
+            --secondary-color: #f7efe2;
+            --text-color: #333;
+            --light-text: #fff;
+            --dark-brown: #5a2d0c;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+        }
+
+        /* Header */
+        .navbar {
+            background-color: var(--secondary-color) !important;
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand img {
+            height: 80px;
+            transition: var(--transition);
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--primary-color) !important;
+            font-weight: 500;
+            font-size: 18px;
+            padding: 10px 15px;
+            transition: var(--transition);
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--dark-brown) !important;
+            transform: translateY(-2px);
+        }
+
+        /* Основной контент */
+        .booking-section {
+            padding: 60px 0;
+        }
+
+        .booking-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .booking-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .booking-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 0;
+        }
+
+        .booking-content {
+            padding: 30px;
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        .booking-details {
+            margin-bottom: 30px;
+        }
+
+        .detail-item {
+            margin-bottom: 15px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--dark-brown);
+        }
+
+        .payment-methods {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .payment-card {
+            flex: 1;
+            min-width: 200px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .payment-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .payment-card.active {
+            border: 2px solid var(--primary-color);
+            background-color: rgba(134, 68, 33, 0.05);
+        }
+
+        .payment-icon {
+            font-size: 40px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: 500;
+            border-radius: 30px;
+            transition: var(--transition);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--dark-brown);
+            border-color: var(--dark-brown);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .contacts-box {
+            background-color: rgba(134, 68, 33, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #fff;
+            color: #000;
+            padding: 60px 0 30px;
+            margin-top: 50px;
+        }
+
+        .footer-logo {
+            max-width: 200px;
+            margin-bottom: 20px;
+        }
+
+        .footer-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .footer-links a {
+            color: #000;
+            display: block;
+            margin-bottom: 10px;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+            transform: translateX(5px);
+        }
+
+        .social-icons a {
+            color: var(--primary-color);
+            font-size: 20px;
+            margin-right: 15px;
+            transition: var(--transition);
+        }
+
+        .social-icons a:hover {
+            color: var(--dark-brown);
+            transform: translateY(-3px);
+        }
+
+        .service-checkbox {
+            width: 18px;
+            height: 18px;
+            margin-top: 0.3rem;
+        }
+        .form-check-label {
+            width: 100%;
+        }
+
+        .copyright {
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            padding-top: 20px;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .map-container {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .map-container iframe {
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 5px;
+            width: 100%;
+            aspect-ratio: 16/9;
+            min-height: 250px;
+        }
+
+        @media (max-width: 768px) {
+            .map-container iframe {
+                height: 200px;
+            }
+        }
+        
+        /* Стили для readonly полей */
+        .bg-light {
+            background-color: #f8f9fa !important;
+        }
+        
+        /* Стили для чекбоксов услуг */
+        .form-check-input {
+            width: 1.2em;
+            height: 1.2em;
+            margin-top: 0.3em;
+        }
+        
+        /* Ошибки формы */
+        .text-danger.small {
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            .payment-card {
+                min-width: 100%;
+            }
+            
+            .booking-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+   <!-- Header -->
+     <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="{% static 'images/logotip.png' %}" alt="FurTree Logo">
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{% url 'home' %}">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'cottages' %}">Коттеджи</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'all_reviews' %}">Отзывы</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'post_list' %}">Блог</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'account' %}">Личный кабинет</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section class="booking-section">
+        {% load static %}
+        <div class="container">
+            <div class="booking-container">
+                <div class="booking-header">
+                    <h1 class="booking-title">БРОНИРОВАНИЕ</h1>
+                </div>
+                
+                <div class="booking-content">
+                    <!-- Блок авторизации -->
+                    {% if not user.is_authenticated %}
+                    <div class="auth-alert alert alert-info mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle fa-2x mr-3"></i>
+                            <div>
+                                <h4 class="mb-2">Уже зарегистрированы?</h4>
+                                <p class="mb-0">Войдите, чтобы автоматически заполнить данные</p>
+                            </div>
+                        </div>
+                        <div class="auth-buttons mt-3 d-flex">
+                            <a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}" 
+                               class="btn btn-outline-primary mr-3">
+                               <i class="fas fa-sign-in-alt mr-2"></i> Войти
+                            </a>
+                            <a href="{% url 'register' %}?next={{ request.get_full_path|urlencode }}" 
+                               class="btn btn-primary">
+                               <i class="fas fa-user-plus mr-2"></i> Регистрация
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Детали бронирования - теперь данные будут отображаться -->
+                    <div class="booking-details card mb-4">
+                        <div class="card-body">
+                            <h3 class="section-title card-title">Ваше бронирование</h3>
+                            
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">Коттедж:</span>
+                                    <span class="detail-value font-weight-bold" id="display-house-name">{{ house.name }}</span>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <span class="detail-label">Дата заезда:</span>
+                                    <span class="detail-value" id="display-check-in">{{ check_in|date:"d.m.Y" }}</span>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <span class="detail-label">Дата выезда:</span>
+                                    <span class="detail-value" id="display-check-out">{{ check_out|date:"d.m.Y" }}</span>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <span class="detail-label">Ночей:</span>
+                                    <span class="detail-value" id="display-nights">{{ nights }}</span>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <span class="detail-label">Гостей:</span>
+                                    <span class="detail-value" id="display-guests">{{ guests }} чел.</span>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <span class="detail-label">Стоимость:</span>
+                                    <span class="detail-value font-weight-bold text-primary" id="display-cost">
+                                        {{ house.price_per_night }} ₽ × {{ nights }} = {{ house_cost }} ₽
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Внутри блока с формой, где-то так: -->
+                    <form method="POST" id="booking-form">
+                        {% csrf_token %}
+                        
+                        <!-- Детали бронирования (можно оставить как есть) -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h3 class="section-title card-title">Ваше бронирование</h3>
+                                <!-- ... существующие детали ... -->
+                            </div>
+                        </div>
+
+                        <!-- НАЧАЛО БЛОКА С ФОРМОЙ -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h3 class="section-title card-title">Контактные данные</h3>
+                                
+                                {% if user.is_authenticated %}
+                                    <div class="alert alert-info mb-4">
+                                        <i class="fas fa-info-circle mr-2"></i>
+                                        Вы вошли как {{ user.get_full_name|default:user.username }}
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- Вот этот новый блок -->
+                                {% for field in form %}
+                                    {% if field.name != 'services' %}
+                                    <div class="form-group">
+                                        {{ field.label_tag }}
+                                        {% if field.field.required %}
+                                            <span class="text-danger">*</span>
+                                        {% endif %}
+                                        {{ field }}
+                                        {% if field.errors %}
+                                            <div class="text-danger small">
+                                                {% for error in field.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                                <!-- КОНЕЦ БЛОКА С ФОРМОЙ -->
+
+                                <!-- Блок услуг (отдельно, так как у него особое оформление) -->
+                                <h4 class="mt-4 mb-3">Дополнительные услуги</h4>
+                                <!-- Replace the existing services section with this -->
+                                <div class="row">
+                                    {% for service in services %}
+                                    <div class="col-md-6 mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" 
+                                                name="services" 
+                                                id="service-{{ service.id }}" 
+                                                value="{{ service.id }}"
+                                                {% if service.id in selected_services %}checked{% endif %}>
+                                            <label class="form-check-label d-flex justify-content-between" 
+                                                for="service-{{ service.id }}">
+                                                <span>{{ service.name }}</span>
+                                                <span class="text-primary">{{ service.price }} ₽</span>
+                                            </label>
+                                            <p class="text-muted small mt-1">{{ service.description }}</p>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg py-3 px-5">
+                                <i class="far fa-calendar-check mr-2"></i> Подтвердить бронирование
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-5 mb-lg-0">
+                    <img src="{% static 'images/logotip.png' %}" alt="FurTree Logo" class="footer-logo">
+                    <p>Уютное пространство для отдыха на природе в Свердловской области.</p>
+                    <div class="social-icons mt-4">
+                        <a href="#"><i class="fab fa-vk"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-telegram"></i></a>
+                        <a href="#"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 col-md-6 mb-5 mb-md-0">
+                    <h3 class="footer-title">Меню</h3>
+                    <div class="footer-links">
+                        <a href="/">Главная</a>
+                        <a href="/cottages/">Коттеджи</a>
+                        <a href="/booking/">Бронирование</a>
+                        <a href="/reviews/">Отзывы</a>
+                        <a href="/about/">О нас</a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 mb-5 mb-md-0">
+                    <h3 class="footer-title">Контакты</h3>
+                    <div class="footer-links">
+                        <p><i class="fas fa-map-marker-alt mr-2"></i> Свердловская область, д. Савина</p>
+                        <p><i class="fas fa-phone-alt mr-2"></i> +7 (977) 777-77-77 (бронирование)</p>
+                        <p><i class="fas fa-phone-alt mr-2"></i> +7 (977) 777-77-77 (ресепшен)</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6">
+                    <h3 class="footer-title">Мы на карте</h3>
+                    <div class="map-container">
+                        <iframe 
+                            src="https://yandex.ru/map-widget/v1/?ll=63.190568%2C56.901132&z=15&pt=63.190568,56.901132,pm2grl" 
+                            width="100%" 
+                            height="250"
+                            frameborder="0" 
+                            allowfullscreen="true"
+                            style="border: 1px solid #ddd; border-radius: 4px;">
+                        </iframe>
+                        <a href="https://yandex.ru/maps/?ll=63.190568%2C56.901132&z=15&pt=63.190568,56.901132,pm2grl" 
+                        target="_blank" 
+                        class="btn btn-sm btn-outline-secondary mt-2 d-block">
+                            Открыть в Яндекс.Картах
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p class="mb-0">© 2023 База отдыха FurTree. Все права защищены.</p>
+                <p class="mb-0">Политика конфиденциальности | Договор оферты</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Скрипты -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Парсим параметры URL
+    function getUrlParams() {
+        const params = new URLSearchParams(window.location.search);
+        return {
+            house: params.get('house'),
+            check_in: params.get('check_in'),
+            check_out: params.get('check_out'),
+            guests: params.get('guests')
+        };
+    }
+
+    // Проверяем, есть ли параметры в URL
+    const urlParams = getUrlParams();
+    if (urlParams.house && urlParams.check_in && urlParams.check_out) {
+        // Если есть - заполняем скрытые поля
+        document.getElementById('house-id').value = urlParams.house;
+        document.getElementById('check-in').value = urlParams.check_in;
+        document.getElementById('check-out').value = urlParams.check_out;
+        document.getElementById('guests').value = urlParams.guests || 2;
+        
+        // Отправляем AJAX-запрос для получения данных о доме
+        fetch(`/api/houses/${urlParams.house}/`)
+            .then(response => response.json())
+            .then(house => {
+                // Обновляем отображаемые данные
+                document.getElementById('display-house-name').textContent = house.name;
+                document.getElementById('display-cost').textContent = 
+                    `${house.price_per_night} ₽ × ${calculateNights(urlParams.check_in, urlParams.check_out)} = ${calculateCost(house.price_per_night, urlParams.check_in, urlParams.check_out)} ₽`;
+            });
+        
+        // Обновляем остальные отображаемые данные
+        document.getElementById('display-check-in').textContent = formatDate(urlParams.check_in);
+        document.getElementById('display-check-out').textContent = formatDate(urlParams.check_out);
+        document.getElementById('display-guests').textContent = `${urlParams.guests || 2} чел.`;
+        document.getElementById('display-nights').textContent = calculateNights(urlParams.check_in, urlParams.check_out);
+    }
+
+    // Проверяем, есть ли сохраненные данные в sessionStorage
+    const savedUserData = sessionStorage.getItem('userData');
+    
+    // Если пользователь не авторизован, но есть сохраненные данные - подставляем их
+    if (!{% if user.is_authenticated %}true{% else %}false{% endif %} && savedUserData) {
+        const userData = JSON.parse(savedUserData);
+        document.getElementById('client_name').value = userData.name || '';
+        document.getElementById('client_phone').value = userData.phone || '';
+        document.getElementById('client_email').value = userData.email || '';
+    }
+
+    // Вспомогательные функции
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('ru-RU');
+    }
+
+    function calculateNights(checkIn, checkOut) {
+        const oneDay = 24 * 60 * 60 * 1000;
+        const firstDate = new Date(checkIn);
+        const secondDate = new Date(checkOut);
+        return Math.round(Math.abs((firstDate - secondDate) / oneDay));
+    }
+
+    function calculateCost(pricePerNight, checkIn, checkOut) {
+        return pricePerNight * calculateNights(checkIn, checkOut);
+    }
+
+    // Сохраняем данные при переходе на авторизацию
+    document.querySelectorAll('.auth-buttons a').forEach(link => {
+        link.addEventListener('click', function() {
+            const bookingData = {
+                house_id: urlParams.house,
+                check_in: urlParams.check_in,
+                check_out: urlParams.check_out,
+                guests: urlParams.guests || 2
+            };
+            sessionStorage.setItem('pendingBooking', JSON.stringify(bookingData));
+        });
+    });
+
+    // Автоматическое форматирование телефона
+    document.getElementById('client_phone').addEventListener('input', function(e) {
+        let phone = e.target.value.replace(/\D/g, '');
+        if (phone.length > 1) {
+            phone = '+7' + phone.substring(1);
+        }
+        e.target.value = phone;
+    });
+
+    // Валидация формы
+    const form = document.getElementById('booking-form');
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Check all required fields
+        document.querySelectorAll('[required]').forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+
+        if (!isValid) {
+            e.preventDefault();
+            // Scroll to first error
+            document.querySelector('.is-invalid').scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-6">
+            <img src="{{ image_url }}" 
+                 alt="{{ service.name }}" 
+                 class="img-fluid rounded shadow"
+                 onerror="this.onerror=null;this.src='{% static 'images/no-image.jpg' %}'">
+        </div>
+        <div class="col-lg-6">
+            <h1 class="mb-4">{{ service.name }}</h1>
+            <p class="lead">{{ service.get_type_display }}</p>
+            <h3 class="text-primary mb-4">{{ service.price }} руб.</h3>
+            
+            <div class="mb-4">
+                <h4>Описание:</h4>
+                <p>{{ service.description|linebreaks }}</p>
+            </div>
+            
+            <button class="btn btn-primary btn-lg">Забронировать</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

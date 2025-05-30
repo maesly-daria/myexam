@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h3 class="mb-0">Бронирование подтверждено!</h3>
+        </div>
+        <div class="card-body">
+            <h4 class="card-title">{{ booking.house_id.name }}</h4>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <p><strong>Дата заезда:</strong> {{ booking.check_in_date|date:"d.m.Y" }}</p>
+                    <p><strong>Дата выезда:</strong> {{ booking.check_out_date|date:"d.m.Y" }}</p>
+                    <p><strong>Ночей:</strong> {{ nights }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>ФИО:</strong> {{ booking.client_id.get_full_name }}</p>
+                    <p><strong>Телефон:</strong> {{ booking.client_id.phone_number }}</p>
+                    <p><strong>Email:</strong> {{ booking.client_id.email }}</p>
+                </div>
+            </div>
+            
+            <div class="border-top pt-3">
+                <h5>Детали оплаты</h5>
+                <table class="table">
+                    <tr>
+                        <td>Стоимость проживания:</td>
+                        <td class="text-right">{{ booking.house_id.price_per_night }} ₽ × {{ nights }} ночей</td>
+                        <td class="text-right">{{ booking.total_cost }} ₽</td>
+                    </tr>
+                    {% if booking.services.all %}
+                        {% for service in booking.services.all %}
+                        <tr>
+                            <td>Услуга: {{ service.name }}</td>
+                            <td></td>
+                            <td class="text-right">{{ service.price }} ₽</td>
+                        </tr>
+                        {% endfor %}
+                    {% endif %}
+                    <tr class="font-weight-bold">
+                        <td>Итого к оплате:</td>
+                        <td></td>
+                        <td class="text-right">{{ booking.total_cost }} ₽</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="mt-4">
+                <h5>Способы оплаты</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fab fa-cc-visa fa-3x mb-3 text-primary"></i>
+                                <h5>Онлайн оплата картой</h5>
+                                <button class="btn btn-primary btn-lg mt-2">Оплатить сейчас</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-money-bill-wave fa-3x mb-3 text-success"></i>
+                                <h5>Оплата на месте</h5>
+                                <p class="text-muted">Вы можете оплатить наличными или картой при заселении</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4">
+                <i class="fas fa-info-circle mr-2"></i>
+                Номер вашего бронирования: <strong>{{ booking.id }}</strong>. 
+                Сохраните его для подтверждения.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

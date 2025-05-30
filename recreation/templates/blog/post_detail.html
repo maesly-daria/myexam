@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ post.title }}</title>
+</head>
+<body>
+    <h1>{{ post.title }}</h1>
+    <p>{{ post.body|safe }}</p>
+    
+    {% if user.is_authenticated %}
+        {% if user == post.author or user.is_superuser %}
+            <a href="{% url 'post_update' post.id %}" class="btn btn-primary">Редактировать</a>
+            <a href="{% url 'post_delete' post.id %}" class="btn btn-danger">Удалить</a>
+        {% endif %}
+    {% endif %}
+    
+    <p>Опубликовано: {{ post.publish|date:"F j, Y" }}</p>
+    <p><a href="{% url 'post_list' %}">Вернуться к списку</a></p>
+    
+    {% if post.image %}
+        <p><img src="{{ post.image.url }}" alt="{{ post.title }}"></p>
+    {% endif %}
+    
+    <p>Автор: {{ post.author.username }}</p>
+</body>
+</html>

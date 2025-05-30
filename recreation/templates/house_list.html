@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>House List</title>
+</head>
+<body>
+    <h1>Houses</h1>
+    <ul>
+        {% for house in houses %}
+            <li>{{ house.name }} in {{ house.location }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
