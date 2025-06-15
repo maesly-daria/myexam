@@ -1,8 +1,10 @@
 from django.db import migrations
 
+
 def create_customuser_table(apps, schema_editor):
     # SQL для создания таблицы
-    schema_editor.execute("""
+    schema_editor.execute(
+        """
         CREATE TABLE IF NOT EXISTS recreation_customuser (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             password VARCHAR(128) NOT NULL,
@@ -18,12 +20,17 @@ def create_customuser_table(apps, schema_editor):
             phone VARCHAR(20) NOT NULL UNIQUE,
             patronymic VARCHAR(100) NULL
         )
-    """)
+    """
+    )
+
 
 class Migration(migrations.Migration):
     dependencies = [
         # Укажите реальное имя последней примененной миграции
-        ('recreation', '0012_customuser_birth_date_customuser_bookings_and_more'),  # Замените на фактическое имя
+        (
+            "recreation",
+            "0012_customuser_birth_date_customuser_bookings_and_more",
+        ),  # Замените на фактическое имя
     ]
 
     operations = [

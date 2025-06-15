@@ -8,38 +8,60 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('auth', '0012_alter_user_first_name_max_length'),
-        ('recreation', '0010_house_is_active'),
+        ("auth", "0012_alter_user_first_name_max_length"),
+        ("recreation", "0010_house_is_active"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='client',
-            name='user',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='client_profile', to=settings.AUTH_USER_MODEL),
+            model_name="client",
+            name="user",
+            field=models.OneToOneField(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="client_profile",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterField(
-            model_name='customuser',
-            name='address',
-            field=models.TextField(blank=True, null=True, verbose_name='Адрес'),
+            model_name="customuser",
+            name="address",
+            field=models.TextField(blank=True, null=True, verbose_name="Адрес"),
         ),
         migrations.AlterField(
-            model_name='customuser',
-            name='groups',
-            field=models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups'),
+            model_name="customuser",
+            name="groups",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="The groups this user belongs to. A user will get all permissions granted to each of their groups.",
+                related_name="user_set",
+                related_query_name="user",
+                to="auth.group",
+                verbose_name="groups",
+            ),
         ),
         migrations.AlterField(
-            model_name='customuser',
-            name='phone',
-            field=models.CharField(blank=True, max_length=20, null=True, verbose_name='Телефон'),
+            model_name="customuser",
+            name="phone",
+            field=models.CharField(
+                blank=True, max_length=20, null=True, verbose_name="Телефон"
+            ),
         ),
         migrations.AlterField(
-            model_name='customuser',
-            name='user_permissions',
-            field=models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='user permissions'),
+            model_name="customuser",
+            name="user_permissions",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="Specific permissions for this user.",
+                related_name="user_set",
+                related_query_name="user",
+                to="auth.permission",
+                verbose_name="user permissions",
+            ),
         ),
         migrations.AlterModelTable(
-            name='customuser',
-            table='custom_users',
+            name="customuser",
+            table="custom_users",
         ),
     ]

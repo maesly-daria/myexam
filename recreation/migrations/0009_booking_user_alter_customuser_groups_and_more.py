@@ -8,30 +8,56 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('auth', '0012_alter_user_first_name_max_length'),
-        ('recreation', '0008_customuser_alter_post_author'),
+        ("auth", "0012_alter_user_first_name_max_length"),
+        ("recreation", "0008_customuser_alter_post_author"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='booking',
-            name='user',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL, verbose_name='Пользователь'),
+            model_name="booking",
+            name="user",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="Пользователь",
+            ),
         ),
         migrations.AlterField(
-            model_name='customuser',
-            name='groups',
-            field=models.ManyToManyField(blank=True, help_text='The groups this user belongs to.', related_name='customuser_set', related_query_name='user', to='auth.group', verbose_name='groups'),
+            model_name="customuser",
+            name="groups",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="The groups this user belongs to.",
+                related_name="customuser_set",
+                related_query_name="user",
+                to="auth.group",
+                verbose_name="groups",
+            ),
         ),
         migrations.AlterField(
-            model_name='customuser',
-            name='user_permissions',
-            field=models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='customuser_set', related_query_name='user', to='auth.permission', verbose_name='user permissions'),
+            model_name="customuser",
+            name="user_permissions",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="Specific permissions for this user.",
+                related_name="customuser_set",
+                related_query_name="user",
+                to="auth.permission",
+                verbose_name="user permissions",
+            ),
         ),
         migrations.AlterField(
-            model_name='house',
-            name='employee_id',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='recreation.employee', verbose_name='Ответственный сотрудник'),
+            model_name="house",
+            name="employee_id",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="recreation.employee",
+                verbose_name="Ответственный сотрудник",
+            ),
         ),
     ]

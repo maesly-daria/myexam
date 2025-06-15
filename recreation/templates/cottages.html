@@ -207,7 +207,7 @@
 </head>
 <body>
     <!-- Header -->
-     <nav class="navbar navbar-expand-lg navbar-light">
+    <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container">
             <a class="navbar-brand" href="#">
                 <img src="{% static 'images/logotip.png' %}" alt="FurTree Logo">
@@ -237,48 +237,68 @@
         </div>
     </nav>
 
-    <section class="cottages-section">
+    <section class="cottages-section py-5">
         <div class="container">
-            <h1 class="section-title">Наши коттеджи</h1>
+            <h1 class="section-title text-center mb-5">Наши коттеджи</h1>
             
-            <!-- Форма фильтрации -->
+            <!-- Объединенная форма фильтрации -->
             <div class="filter-box">
-                <form id="cottageFilterForm" method="GET" action="{% url 'cottages' %}">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <label>Дата заезда</label>
-                            <input type="date" class="form-control" name="check_in" value="{{ check_in }}" required>
+                <form method="get" class="filter-form">
+                    <!-- Ваши оригинальные поля -->
+                    <div>
+                        <label for="check_in">Заезд</label>
+                        <input type="date" id="check_in" name="check_in" class="form-control" 
+                               value="{{ check_in }}" min="{{ today }}">
+                    </div>
+                    <div>
+                        <label for="check_out">Выезд</label>
+                        <input type="date" id="check_out" name="check_out" class="form-control" 
+                               value="{{ check_out }}" min="{{ tomorrow }}">
+                    </div>
+                    <div>
+                        <label for="guests">Гости</label>
+                        <select name="guests" id="guests" class="form-control">
+                            {% for i in guest_range %}
+                                <option value="{{ i }}" {% if guests == i %}selected{% endif %}>{{ i }} чел.</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Новые поля фильтрации -->
+                    <div>
+                        <label for="min_price">Цена от (руб.)</label>
+                        <input type="number" id="min_price" name="min_price" class="form-control" 
+                               value="{{ request.GET.min_price }}" min="0">
+                    </div>
+                    <div>
+                        <label for="max_price">Цена до (руб.)</label>
+                        <input type="number" id="max_price" name="max_price" class="form-control" 
+                               value="{{ request.GET.max_price }}" min="0">
+                    </div>
+                    <div>
+                        <label for="name_contains">Название</label>
+                        <input type="text" id="name_contains" name="name_contains" class="form-control" 
+                               value="{{ request.GET.name_contains }}" placeholder="Поиск...">
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="form-check">
+                            <input type="checkbox" id="has_location" name="has_location" 
+                                   class="form-check-input" {% if request.GET.has_location %}checked{% endif %}>
+                            <label for="has_location" class="form-check-label">С адресом</label>
                         </div>
-                        <div class="col-md-3">
-                            <label>Дата выезда</label>
-                            <input type="date" class="form-control" name="check_out" value="{{ check_out }}" required>
-                        </div>
-                        <div class="col-md-3">
-                            <label>Гости</label>
-                            <select class="form-control" name="guests" required>
-                                {% for i in guest_range %}
-                                    <option value="{{ i }}" {% if guests == i %}selected{% endif %}>
-                                        {{ i }} 
-                                        {% if i == 1 %}гость
-                                        {% elif i >= 2 and i <= 4 %}гостя
-                                        {% else %}гостей
-                                        {% endif %}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary btn-block">Найти коттеджи</button>
-                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Применить</button>
+                        <a href="{% url 'cottages' %}" class="btn btn-outline-secondary">Сбросить</a>
                     </div>
                 </form>
             </div>
 
+            <!-- Список коттеджей -->
             <div class="row">
                 {% for house in houses_data %}
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="cottage-card card h-100">
-                        <!-- Измененная строка для отображения изображений -->
                         <img src="{% static 'images/' %}{{ house.obj.slug }}.jpg" 
                             class="card-img-top" 
                             alt="{{ house.obj.name }}"
@@ -286,18 +306,34 @@
                         
                         <div class="card-body">
                             <h5 class="card-title">{{ house.obj.name }}</h5>
-                            <p class="card-text">Вместимость: {{ house.obj.capacity }} чел.</p>
-                            <p class="card-text">{{ house.obj.price_per_night }} руб./ночь</p>
-                            <!-- В cottages.html, в цикле для каждого коттеджа -->
-                            <a href="{% url 'booking' %}?house={{ house.obj.house_id }}&check_in={{ check_in|urlencode }}&check_out={{ check_out|urlencode }}&guests={{ guests }}" 
-                            class="btn btn-primary btn-block">
-                            Забронировать
-                            </a>
-                            <a href="{% url 'cottage_detail' slug=house.obj.slug %}" 
-                            class="btn btn-outline-primary btn-block mt-2">
-                            Подробнее
-                            </a>
+                            <p class="card-text">
+                                <i class="fas fa-map-marker-alt"></i> 
+                                {{ house.obj.location|default:"Адрес не указан" }}
+                            </p>
+                            <p class="card-text">
+                                <i class="fas fa-users"></i> До {{ house.obj.capacity }} чел.
+                            </p>
+                            <p class="card-text text-success font-weight-bold">
+                                {{ house.obj.price_per_night }} руб./ночь
+                            </p>
+                            
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'booking' %}?house={{ house.obj.house_id }}&check_in={{ check_in|urlencode }}&check_out={{ check_out|urlencode }}&guests={{ guests }}" 
+                                   class="btn btn-primary">
+                                    Забронировать
+                                </a>
+                                <a href="{% url 'cottage_detail' slug=house.obj.slug %}" 
+                                   class="btn btn-outline-primary">
+                                    Подробнее
+                                </a>
+                            </div>
                         </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        По вашему запросу ничего не найдено. Попробуйте изменить параметры фильтрации.
                     </div>
                 </div>
                 {% endfor %}
@@ -367,34 +403,39 @@
         </div>
     </footer>
 
-    <!-- Scripts -->
+ <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     
     <script>
-    // Устанавливаем минимальные даты для формы
+    // Управление датами
     document.addEventListener('DOMContentLoaded', function() {
         const today = new Date().toISOString().split('T')[0];
-        const checkInInput = document.querySelector('input[name="check_in"]');
-        const checkOutInput = document.querySelector('input[name="check_out"]');
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
         
-        checkInInput.min = today;
-        checkInInput.addEventListener('change', function() {
+        // Устанавливаем минимальные даты
+        const checkIn = document.getElementById('check_in');
+        const checkOut = document.getElementById('check_out');
+        
+        checkIn.min = today;
+        if (!checkIn.value) checkIn.value = today;
+        
+        checkOut.min = tomorrowStr;
+        if (!checkOut.value) checkOut.value = tomorrowStr;
+        
+        // Обновляем минимальную дату выезда при изменении даты заезда
+        checkIn.addEventListener('change', function() {
             if (this.value) {
                 const nextDay = new Date(this.value);
                 nextDay.setDate(nextDay.getDate() + 1);
-                checkOutInput.min = nextDay.toISOString().split('T')[0];
+                checkOut.min = nextDay.toISOString().split('T')[0];
+                if (new Date(checkOut.value) < nextDay) {
+                    checkOut.value = nextDay.toISOString().split('T')[0];
+                }
             }
-        });
-    });
-
-    // Проверка загрузки изображений
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.card-img-top').forEach(img => {
-            img.onerror = function() {
-                this.src = '{% static 'images/no-image.jpg' %}';
-            };
         });
     });
     </script>

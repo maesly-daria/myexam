@@ -332,12 +332,29 @@
     <section class="reviews-section">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="section-title">Отзывы наших гостей</h2>
-                {% if user.is_authenticated %}
-                    <button class="btn btn-primary add_review" data-toggle="modal" data-target="#reviewModal">
-                        <i class="fas fa-plus"></i> Добавить отзыв
-                    </button>
-                {% endif %}
+                <h2 class="section-title">
+                    {% if user_filter %}
+                    Мои отзывы
+                    {% else %}
+                    Отзывы наших гостей
+                    {% endif %}
+                </h2>
+                <div>
+                    {% if user.is_authenticated %}
+                        {% if not user_filter %}
+                        <a href="?user=me" class="btn btn-outline-primary mr-2">
+                            <i class="fas fa-user"></i> Мои отзывы
+                        </a>
+                        {% else %}
+                        <a href="{% url 'all_reviews' %}" class="btn btn-outline-secondary mr-2">
+                            <i class="fas fa-list"></i> Все отзывы
+                        </a>
+                        {% endif %}
+                        <button class="btn btn-primary add_review" data-toggle="modal" data-target="#reviewModal">
+                            <i class="fas fa-plus"></i> Добавить отзыв
+                        </button>
+                    {% endif %}
+                </div>
             </div>
 
             <!-- Модальное окно для формы отзыва -->
@@ -389,39 +406,49 @@
 
             <!-- Список отзывов -->
             <div class="reviews-container">
-                {% for review in page_obj %}
-                <div class="review-card">
-                    <div class="review-header">
-                        <div class="review-rating">
-                            {% for i in "12345" %}
-                                {% if forloop.counter <= review.rating %}
-                                    <i class="fas fa-star"></i>
-                                {% else %}
-                                    <i class="far fa-star"></i>
-                                {% endif %}
-                            {% endfor %}
+                {% if page_obj %}
+                    {% for review in page_obj %}
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="review-rating">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <i class="fas fa-star"></i>
+                                    {% else %}
+                                        <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <p class="review-cottage">Коттедж: {{ review.house_id.name }}</p>
+                            {% if user.is_authenticated and review.client_id.user == user %}
+                            <div class="review-actions">
+                                <a href="{% url 'review_edit' review.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-danger delete-review" data-id="{{ review.pk }}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                            </div>
+                            {% endif %}
                         </div>
-                        <p class="review-cottage">Коттедж: {{ review.house_id.name }}</p>
-                        {% if user.is_authenticated and review.client_id.user == user %}
-                        <div class="review-actions">
-                            <a href="{% url 'review_edit' review.pk %}" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <a href="#" class="btn btn-sm btn-outline-danger delete-review" data-id="{{ review.pk }}">
-                                <i class="fas fa-trash-alt"></i>
-                            </a>
+                        <p class="review-text">{{ review.comment|striptags|linebreaks }}</p>
+                        <div class="review-footer">
+                            <p class="review-author">
+                                - {{ review.client_id.last_name }} {{ review.client_id.first_name.0 }}.
+                            </p>
+                            <p class="review-date">{{ review.created_at|date:"d.m.Y" }}</p>
                         </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info">
+                        {% if user_filter %}
+                        У вас пока нет отзывов. Хотите <a href="#" data-toggle="modal" data-target="#reviewModal">оставить первый отзыв</a>?
+                        {% else %}
+                        Пока нет отзывов.
                         {% endif %}
                     </div>
-                    <p class="review-text">{{ review.comment|striptags|linebreaks }}</p>
-                    <div class="review-footer">
-                        <p class="review-author">
-                            - {{ review.client_id.last_name }} {{ review.client_id.first_name.0 }}.
-                        </p>
-                        <p class="review-date">{{ review.created_at|date:"d.m.Y" }}</p>
-                    </div>
-                </div>
-                {% endfor %}
+                {% endif %}
             </div>
 
             <!-- Пагинация -->
@@ -539,6 +566,26 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
     $(document).ready(function() {
+        // Кнопка удаления
+        $('.delete-review').click(function(e) {
+            e.preventDefault();
+            if (confirm('Вы уверены, что хотите удалить этот отзыв?')) {
+                const reviewId = $(this).data('id');
+                $.ajax({
+                    url: `/reviews/${reviewId}/delete/`,
+                    method: 'POST',
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function() {
+                        location.reload();
+                    },
+                    error: function(xhr) {
+                        alert('Ошибка: ' + xhr.responseJSON.message);
+                    }
+                });
+            }
+        });
         // Обработка редактирования отзыва
         $('.edit-review').click(function(e) {
             e.preventDefault();

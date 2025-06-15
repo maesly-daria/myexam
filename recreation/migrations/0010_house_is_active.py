@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recreation', '0009_booking_user_alter_customuser_groups_and_more'),
+        ("recreation", "0009_booking_user_alter_customuser_groups_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='house',
-            name='is_active',
-            field=models.BooleanField(default=True, verbose_name='Активен'),
+            model_name="house",
+            name="is_active",
+            field=models.BooleanField(default=True, verbose_name="Активен"),
         ),
     ]

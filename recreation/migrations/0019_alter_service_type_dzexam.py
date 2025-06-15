@@ -7,30 +7,74 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recreation', '0018_alter_posttag_options_alter_service_options_and_more'),
+        ("recreation", "0018_alter_posttag_options_alter_service_options_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='service',
-            name='type',
-            field=models.CharField(choices=[('entertainment', 'Развлечения'), ('relax', 'Релакс'), ('transport', 'Транспорт'), ('other', 'Другое')], max_length=20, verbose_name='Тип услуги'),
+            model_name="service",
+            name="type",
+            field=models.CharField(
+                choices=[
+                    ("entertainment", "Развлечения"),
+                    ("relax", "Релакс"),
+                    ("transport", "Транспорт"),
+                    ("other", "Другое"),
+                ],
+                max_length=20,
+                verbose_name="Тип услуги",
+            ),
         ),
         migrations.CreateModel(
-            name='DZexam',
+            name="DZexam",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=200, verbose_name='Название экзамена')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')),
-                ('exam_date', models.DateField(verbose_name='Дата проведения экзамена')),
-                ('image', models.ImageField(blank=True, null=True, upload_to='exam_images/', verbose_name='Изображение задания')),
-                ('is_public', models.BooleanField(default=False, verbose_name='Опубликовано')),
-                ('users', models.ManyToManyField(to=settings.AUTH_USER_MODEL, verbose_name='Пользователи')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "title",
+                    models.CharField(max_length=200, verbose_name="Название экзамена"),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="Дата создания"
+                    ),
+                ),
+                (
+                    "exam_date",
+                    models.DateField(verbose_name="Дата проведения экзамена"),
+                ),
+                (
+                    "image",
+                    models.ImageField(
+                        blank=True,
+                        null=True,
+                        upload_to="exam_images/",
+                        verbose_name="Изображение задания",
+                    ),
+                ),
+                (
+                    "is_public",
+                    models.BooleanField(default=False, verbose_name="Опубликовано"),
+                ),
+                (
+                    "users",
+                    models.ManyToManyField(
+                        to=settings.AUTH_USER_MODEL, verbose_name="Пользователи"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Экзамен',
-                'verbose_name_plural': 'Экзамены',
-                'ordering': ['-created_at'],
+                "verbose_name": "Экзамен",
+                "verbose_name_plural": "Экзамены",
+                "ordering": ["-created_at"],
             },
         ),
     ]

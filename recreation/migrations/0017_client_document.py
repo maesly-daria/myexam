@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recreation', '0016_remove_booking_house_id_booking_base_cost_and_more'),
+        ("recreation", "0016_remove_booking_house_id_booking_base_cost_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='client',
-            name='document',
-            field=models.FileField(blank=True, null=True, upload_to='client_documents/', verbose_name='Документ'),
+            model_name="client",
+            name="document",
+            field=models.FileField(
+                blank=True,
+                null=True,
+                upload_to="client_documents/",
+                verbose_name="Документ",
+            ),
         ),
     ]

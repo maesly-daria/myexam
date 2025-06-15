@@ -6,22 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recreation', '0014_alter_customuser_options_and_more'),
+        ("recreation", "0014_alter_customuser_options_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='booking',
-            name='employee_id',
+            model_name="booking",
+            name="employee_id",
         ),
         migrations.AddField(
-            model_name='booking',
-            name='comment',
-            field=models.TextField(blank=True, null=True, verbose_name='Комментарий'),
+            model_name="booking",
+            name="comment",
+            field=models.TextField(blank=True, null=True, verbose_name="Комментарий"),
         ),
         migrations.AlterField(
-            model_name='customuser',
-            name='username',
-            field=models.CharField(max_length=100, unique=True, verbose_name='Имя'),
+            model_name="customuser",
+            name="username",
+            field=models.CharField(max_length=100, unique=True, verbose_name="Имя"),
         ),
     ]
