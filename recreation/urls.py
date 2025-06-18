@@ -59,7 +59,7 @@ urlpatterns = (
         path("reviews/<int:pk>/edit/", views.update_review, name="review_edit"),
         path("reviews/<int:pk>/delete/", delete_review, name="review_delete"),
         path("reviews/", views.all_reviews, name="all_reviews"),
-        path('my-bookings/', views.user_bookings, name='user_bookings'),
+        path("my-bookings/", views.user_bookings, name="user_bookings"),
         path("api/", include(router.urls)),
         path(
             "api/houses/<int:house_id>/history/",

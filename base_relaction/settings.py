@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "debug_toolbar",
     "django_filters",
-    "modeltranslation",
     "simple_history",
     "recreation.apps.RecreationConfig",
     "rest_framework",
@@ -97,17 +96,16 @@ TEMPLATES = [
 WSGI_APPLICATION = "base_relaction.wsgi.application"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
 # Переопределение для Docker
-if os.environ.get('DOCKER_CONTAINER'):
-    DATABASES['default'] = dj_database_url.config(
-        default='postgres://postgres:postgres@db:5432/base_relaction',
-        conn_max_age=600
+if os.environ.get("DOCKER_CONTAINER"):
+    DATABASES["default"] = dj_database_url.config(
+        default="postgres://postgres:postgres@db:5432/base_relaction", conn_max_age=600
     )
 # Password validation https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
@@ -148,7 +146,6 @@ LOGIN_REDIRECT_URL = "/account/"
 LOGOUT_REDIRECT_URL = "home"
 LOGIN_URL = "/login/"
 
-STATIC_URL = "static/"  # Для разработки
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 
@@ -173,3 +170,7 @@ CKEDITOR_CONFIGS = {
         "width": "100%",
     },
 }
+
+TRANSLATABLE_MODEL_MODULES = [
+    "yourapp.models",  # Укажите путь к вашим моделям, например 'main.models'
+]

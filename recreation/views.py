@@ -14,6 +14,7 @@ from django.db.models import Avg, Count, Q
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+
 # from django.utils.text import slugify
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import ListView
@@ -65,13 +66,13 @@ def home(request):
         # 2. Получаем последние отзывы
         reviews = Review.objects.select_related("client_id", "house_id").order_by(
             "-created_at"
-        )[:5]
+        )[2::6]
 
         # 3. Получаем последние посты
         latest_posts = Post.objects.filter(status="published").order_by("-publish")[:3]
 
         # 4. Получаем активные услуги
-        services = Service.objects.filter(is_active=True).order_by("type", "name")[:9]
+        services = Service.objects.filter(is_active=True).order_by("type", "name")[:6]
 
         return render(
             request,
@@ -786,5 +787,5 @@ class CottagesListView(ListView):
 
 @login_required
 def user_bookings(request):
-    bookings = Booking.objects.filter(user=request.user).select_related('house')
-    return render(request, 'bookings/user_bookings.html', {'bookings': bookings})
+    bookings = Booking.objects.filter(user=request.user).select_related("house")
+    return render(request, "bookings/user_bookings.html", {"bookings": bookings})

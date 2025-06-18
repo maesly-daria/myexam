@@ -216,14 +216,14 @@ class PostAdmin(ExportMixin, admin.ModelAdmin):
 
 
 class ClientResource(resources.ModelResource):
-    full_name = fields.Field(column_name="ФИО")
+    full_name = fields.Field(column_name="ФИО", readonly=True)
     phone = fields.Field(column_name="Телефон", attribute="phone_number")
-    email = fields.Field(column_name="Email")
-    document_status = fields.Field(column_name="Документ")
+    email = fields.Field(column_name="Email", readonly=True)
+    document_status = fields.Field(column_name="Документ", readonly=True)
 
     class Meta:
         model = Client
-        fields = ("full_name", "phone_number", "email", "document")
+        fields = ("full_name", "phone", "email", "document_status")
         export_order = ("full_name", "phone", "email", "document_status")
         encoding = "utf-8-sig"
 
@@ -236,9 +236,7 @@ class ClientResource(resources.ModelResource):
         return client.email or "Не указан"
 
     def dehydrate_document_status(self, client):
-        if client.document:
-            return "Прикреплен"
-        return "Отсутствует"
+        return "Прикреплен" if client.document else "Отсутствует"
 
 
 @admin.register(Client)
