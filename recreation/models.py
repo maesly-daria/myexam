@@ -336,6 +336,10 @@ class House(models.Model):
         )
         return media_exists or static_exists
 
+    class Meta:
+        verbose_name = "Коттедж"
+        verbose_name_plural = "Коттеджи"
+
 
 class Facility(models.Model):
     facility_id = models.AutoField(primary_key=True, verbose_name="ID оборудования")

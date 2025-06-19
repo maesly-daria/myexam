@@ -10,15 +10,14 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import transaction
-from django.db.models import Avg, Count, Q, Case, When, IntegerField 
+from django.db.models import Avg, Count, Q, Case, When, IntegerField
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET
 from django.views.generic import ListView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import Review
 
 from .forms import (
     BookingForm,
@@ -30,7 +29,6 @@ from .forms import (
     HouseFilter,
     HouseForm,
     PostForm,
-    ReviewForm,
     UserProfileForm,
 )
 from .models import Booking, Client, House, Post, Review, Service, Tag
@@ -536,116 +534,114 @@ def register_view(request):
 def all_reviews(request):
     # Получаем список коттеджей для формы
     houses = House.objects.all()
-    
+
     # Создаем базовый запрос
     reviews = Review.objects.all()
-    
+
     # Добавляем аннотацию только для аутентифицированных пользователей
     if request.user.is_authenticated:
         reviews = reviews.annotate(
             is_mine=Case(
                 When(client_id__user=request.user, then=1),
                 default=0,
-                output_field=IntegerField()
+                output_field=IntegerField(),
             )
-        ).order_by('-is_mine', '-created_at')
+        ).order_by("-is_mine", "-created_at")
     else:
-        reviews = reviews.order_by('-created_at')
-    
+        reviews = reviews.order_by("-created_at")
+
     paginator = Paginator(reviews, 12)
-    page_number = request.GET.get('page')
+    page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-    
+
     context = {
-        'page_obj': page_obj,
-        'houses': houses,  # Добавляем список домов в контекст
-        'user': request.user
+        "page_obj": page_obj,
+        "houses": houses,  # Добавляем список домов в контекст
+        "user": request.user,
     }
-    return render(request, 'all_reviews.html', context)
+    return render(request, "all_reviews.html", context)
 
 
 @login_required
 def create_review(request):
     if request.method == "POST":
         try:
-            house_id = request.POST.get('house_id')
-            rating = request.POST.get('rating')
-            comment = request.POST.get('comment')
-            
+            house_id = request.POST.get("house_id")
+            rating = request.POST.get("rating")
+            comment = request.POST.get("comment")
+
             # Используем pk вместо id, так как Django автоматически создает первичный ключ
             house = get_object_or_404(House, pk=house_id)
-            
+
             # Получаем или создаем клиента для текущего пользователя
             client, created = Client.objects.get_or_create(user=request.user)
-            
+
             Review.objects.create(
-                client_id=client,
-                house_id=house,
-                rating=rating,
-                comment=comment
+                client_id=client, house_id=house, rating=rating, comment=comment
             )
-            
+
             messages.success(request, "Ваш отзыв успешно добавлен!")
             return redirect("all_reviews")
-            
+
         except Exception as e:
             messages.error(request, f"Ошибка при создании отзыва: {str(e)}")
             return redirect("all_reviews")
-    
+
     return redirect("all_reviews")
 
 
 @login_required
 def delete_review(request, pk):
     review = get_object_or_404(Review, pk=pk)
-    
+
     # Проверяем, что отзыв принадлежит текущему пользователю
     if review.client_id.user != request.user:
         messages.error(request, "Вы не можете удалить этот отзыв")
         return redirect("all_reviews")
-    
+
     if request.method == "POST":
         review.delete()
         messages.success(request, "Отзыв успешно удален")
         return redirect("all_reviews")
-    
+
     return redirect("all_reviews")
+
 
 @login_required
 def update_review(request, pk):
     review = get_object_or_404(Review, pk=pk)
-    
+
     # Проверка прав доступа
     if review.client_id.user != request.user:
         messages.error(request, "У вас нет прав для редактирования этого отзыва")
         return redirect("all_reviews")
 
     houses = House.objects.all()
-    
+
     if request.method == "POST":
         try:
-            house_id = request.POST.get('house_id')
-            rating = request.POST.get('rating')
-            comment = request.POST.get('comment')
-            
+            house_id = request.POST.get("house_id")
+            rating = request.POST.get("rating")
+            comment = request.POST.get("comment")
+
             # Обновляем данные отзыва
             review.house_id = get_object_or_404(House, pk=house_id)
             review.rating = rating
             review.comment = comment
             review.save()
-            
+
             messages.success(request, "Отзыв успешно обновлен!")
             return redirect("all_reviews")
-            
+
         except Exception as e:
             messages.error(request, f"Ошибка при обновлении: {str(e)}")
-    
+
     # Передаем данные отзыва в контекст
     context = {
-        'review': review,
-        'houses': houses,
+        "review": review,
+        "houses": houses,
     }
-    return render(request, 'review_form.html', context)
+    return render(request, "review_form.html", context)
 
 
 class HouseDetailAPI(APIView):

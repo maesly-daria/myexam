@@ -9,6 +9,7 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from import_export import fields, resources
 from import_export.admin import ExportMixin
+from import_export.formats import base_formats
 from weasyprint import CSS, HTML
 
 from .forms import CustomUserChangeForm, CustomUserCreationForm
@@ -35,6 +36,11 @@ admin.site.site_title = _("База отдыха")
 admin.site.index_title = _("Управление базой отдыха")
 
 
+class BaseResource(resources.ModelResource):
+    def get_export_headers(self):
+        return [field.column_name for field in self.get_export_fields()]
+
+
 class BaseExportAdmin(ExportMixin, admin.ModelAdmin):
     def get_export_formats(self):
         return [CustomXLSXFormat]
@@ -42,6 +48,11 @@ class BaseExportAdmin(ExportMixin, admin.ModelAdmin):
     def get_export_filename(self, request, queryset, file_format):
         model_name = self.model._meta.verbose_name_plural
         return f"{model_name}_export_{timezone.now().strftime('%Y-%m-%d')}.xlsx"
+
+
+class CustomXLSXFormat(base_formats.XLSX):
+    def get_content_type(self):
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 
 class CustomUserAdmin(UserAdmin):
@@ -118,10 +129,16 @@ class PostTagInline(admin.TabularInline):
 
 
 class PostResource(resources.ModelResource):
+    title = fields.Field(column_name="Заголовок", attribute="title")
+    author = fields.Field(column_name="Автор", attribute="author")
+    status = fields.Field(column_name="Статус", attribute="status")
+    publish = fields.Field(column_name="Опубликовано", attribute="publish")
+
     class Meta:
         model = Post
-        fields = ("id", "title", "author__username", "status", "publish")
-        export_order = ("id", "title", "author__username", "status", "publish")
+        fields = ("id", "title", "author", "status", "publish")
+        export_order = fields
+        verbose_name_rus = "Посты"
 
     def get_export_queryset(self, request):
         """Кастомизация queryset для экспорта"""
@@ -160,6 +177,7 @@ class PostAdmin(ExportMixin, admin.ModelAdmin):
     readonly_fields = ("created", "updated", "image_preview")
     verbose_name = _("Пост")
     verbose_name_plural = _("Посты")
+    formats = [CustomXLSXFormat]
 
     @admin.display(description=_("Пользовательский метод"))
     def custom_method(self, obj):
@@ -215,16 +233,21 @@ class PostAdmin(ExportMixin, admin.ModelAdmin):
 
 
 class ClientResource(resources.ModelResource):
-    full_name = fields.Field(column_name="ФИО", readonly=True)
+    full_name = fields.Field(
+        column_name="ФИО", readonly=True, attribute="get_full_name"
+    )
     phone = fields.Field(column_name="Телефон", attribute="phone_number")
     email = fields.Field(column_name="Email", readonly=True)
     document_status = fields.Field(column_name="Документ", readonly=True)
 
     class Meta:
         model = Client
-        fields = ("full_name", "phone", "email", "document_status")
-        export_order = ("full_name", "phone", "email", "document_status")
-        encoding = "utf-8-sig"
+        fields = ("id", "full_name", "email", "phone_number")
+        export_order = fields
+        verbose_name_rus = "Клиенты"
+
+    # def get_export_headers(self):
+    #     return ['ID', 'ФИО', 'Email', 'Телефон']
 
     def dehydrate_full_name(self, client):
         return (
@@ -240,11 +263,20 @@ class ClientResource(resources.ModelResource):
 
 @admin.register(Client)
 class ClientAdmin(ExportMixin, admin.ModelAdmin):
-    list_display = ("last_name", "first_name", "phone_number", "email", "document_link")
+    list_display = (
+        "last_name",
+        "first_name",
+        "patronymic",
+        "phone_number",
+        "email",
+        "document_link",
+    )
     search_fields = ["last_name", "first_name", "patronymic", "phone_number", "email"]
-    list_filter = ("last_name",)
+    list_filter = ("last_name", "first_name", "patronymic", "phone_number", "email")
     raw_id_fields = ["user"]
     list_per_page = 50
+    resource_class = ClientResource
+    formats = [CustomXLSXFormat]
 
     def document_status(self, obj):
         return "✓" if obj.document else "✗"
@@ -343,6 +375,10 @@ class HouseAdmin(ExportMixin, admin.ModelAdmin):
     ordering = ["name"]
     list_per_page = 30
     readonly_fields = ("image_preview",)
+    resource_class = HouseResource
+    formats = [CustomXLSXFormat]  # Используем кастомный XLSX
+    verbose_name = _("Коттедж")
+    verbose_name_plural = _("Коттеджи")
     list_editable = (
         "price_per_night",
         "capacity",
@@ -408,8 +444,23 @@ class HouseAdmin(ExportMixin, admin.ModelAdmin):
         return "-"
 
 
+class FacilityResource(resources.ModelResource):
+    name = fields.Field(column_name="Название", attribute="name")
+    house = fields.Field(column_name="Коттедж", attribute="house")
+    location = fields.Field(column_name="Местоположение", attribute="location")
+    status = fields.Field(column_name="Статус", attribute="status")
+
+    class Meta:
+        model = Facility
+        fields = ("id", "name", "house", "location", "status")
+        export_order = fields
+        verbose_name_rus = "Удобства"
+
+
 @admin.register(Facility)
-class FacilityAdmin(admin.ModelAdmin):
+class FacilityAdmin(ExportMixin, admin.ModelAdmin):
+    resource_class = FacilityResource
+    formats = [CustomXLSXFormat]
     list_display = ("facility_id", "house_link", "name", "description", "status")
     search_fields = ("name", "description")
     list_display_links = ("name",)
@@ -428,8 +479,20 @@ class FacilityAdmin(admin.ModelAdmin):
         )
 
 
+class ReviewResource(resources.ModelResource):
+    client = fields.Field(column_name="Клиент", attribute="client")
+    house = fields.Field(column_name="Коттедж", attribute="house")
+    rating = fields.Field(column_name="Рейтинг", attribute="rating")
+    created_at = fields.Field(column_name="Дата создания", attribute="created_at")
+
+    class Meta:
+        model = Review
+        fields = ("id", "client", "house", "rating", "created_at")
+        export_order = fields
+
+
 @admin.register(Review)
-class ReviewAdmin(admin.ModelAdmin):
+class ReviewAdmin(ExportMixin, admin.ModelAdmin):
     list_display = (
         "review_id",
         "client_link",
@@ -447,6 +510,8 @@ class ReviewAdmin(admin.ModelAdmin):
     readonly_fields = ("review_id", "created_at")
     raw_id_fields = ["client_id", "house_id"]
     date_hierarchy = "created_at"
+    resource_class = ReviewResource
+    formats = [CustomXLSXFormat]
 
     @admin.display(description="Клиент")
     def client_link(self, obj):
@@ -508,6 +573,7 @@ class EmployeeAdmin(BaseExportAdmin, admin.ModelAdmin):
     list_display = ("get_full_name", "get_position", "get_contacts", "get_hire_date")
     list_filter = ("position_id",)
     search_fields = ("last_name", "first_name", "phone", "email", "position_id__name")
+    formats = [CustomXLSXFormat]
 
     def get_full_name(self, obj):
         return f"{obj.last_name} {obj.first_name} {obj.patronymic or ''}".strip()
@@ -535,8 +601,23 @@ class EmployeeAdmin(BaseExportAdmin, admin.ModelAdmin):
     get_hire_date.short_description = "Дата приема"
 
 
+class PositionResource(resources.ModelResource):
+    name = fields.Field(column_name="Должность", attribute="name")
+    responsibilities = fields.Field(
+        column_name="Обязанности", attribute="responsibilities"
+    )
+
+    class Meta:
+        model = Position
+        fields = ("id", "name", "responsibilities")
+        export_order = fields
+        verbose_name_rus = "Должности"
+
+
 @admin.register(Position)
-class PositionAdmin(admin.ModelAdmin):
+class PositionAdmin(ExportMixin, admin.ModelAdmin):
+    resource_class = PositionResource
+    formats = [CustomXLSXFormat]
     list_display = ("position_id", "name", "responsibilities")
     search_fields = ("name", "responsibilities")
     list_display_links = ("name",)
@@ -550,6 +631,29 @@ class BookingServiceInline(admin.TabularInline):
     model = BookingService
     extra = 1
     raw_id_fields = ["service_id"]
+
+
+class BookingResource(resources.ModelResource):
+    client = fields.Field(column_name="Клиент", attribute="client")
+    house = fields.Field(column_name="Коттедж", attribute="house")
+    check_in_date = fields.Field(column_name="Дата заезда", attribute="check_in_date")
+    check_out_date = fields.Field(column_name="Дата выезда", attribute="check_out_date")
+    nights = fields.Field(column_name="Ночей", attribute="nights")
+    total_cost = fields.Field(column_name="Общая стоимость", attribute="total_cost")
+
+    class Meta:
+        model = Booking
+        fields = (
+            "id",
+            "client",
+            "house",
+            "check_in_date",
+            "check_out_date",
+            "nights",
+            "total_cost",
+        )
+        export_order = fields
+        verbose_name_rus = "Бронирования"
 
 
 @admin.register(Booking)
@@ -568,6 +672,8 @@ class BookingAdmin(ExportMixin, admin.ModelAdmin):
     raw_id_fields = ("client_id", "house", "user")
     list_select_related = True
     readonly_fields = ("get_nights_readonly",)
+    resource_class = BookingResource
+    formats = [CustomXLSXFormat]
 
     @admin.display(description="Ночи")
     def get_nights_readonly(self, obj):
@@ -613,9 +719,23 @@ class BookingAdmin(ExportMixin, admin.ModelAdmin):
         return "-"
 
 
+class EventResource(resources.ModelResource):
+    name = fields.Field(column_name="Название", attribute="name")
+    date = fields.Field(column_name="Дата", attribute="date")
+    location = fields.Field(column_name="Место проведения", attribute="location")
+
+    class Meta:
+        model = Event
+        fields = ("id", "name", "date", "location")
+        export_order = fields
+        verbose_name_rus = "Мероприятия"
+
+
 @admin.register(Event)
-class EventAdmin(admin.ModelAdmin):
-    list_display = ("event_id", "name", "date", "location", "booking_link")
+class EventAdmin(ExportMixin, admin.ModelAdmin):
+    resource_class = EventResource
+    formats = [CustomXLSXFormat]
+    list_display = ("name", "date", "location")
     search_fields = ("name", "location")
     list_filter = ("date",)
     readonly_fields = ("event_id",)
@@ -634,8 +754,23 @@ class EventAdmin(admin.ModelAdmin):
         return "-"
 
 
+class ServiceResource(resources.ModelResource):
+    type = fields.Field(column_name="Тип услуги", attribute="type")
+    name = fields.Field(column_name="Название", attribute="name")
+    price = fields.Field(column_name="Цена", attribute="price")
+    is_active = fields.Field(column_name="Активна", attribute="is_active")
+
+    class Meta:
+        model = Service
+        fields = ("id", "name", "type", "price", "is_active")
+        export_order = fields
+        verbose_name_rus = "Услуги"
+
+
 @admin.register(Service)
-class ServiceAdmin(admin.ModelAdmin):
+class ServiceAdmin(ExportMixin, admin.ModelAdmin):
+    resource_class = ServiceResource
+    formats = [CustomXLSXFormat]
     list_display = (
         "service_id",
         "name",
@@ -669,7 +804,7 @@ class ServiceAdmin(admin.ModelAdmin):
 
 
 @admin.register(BookingService)
-class BookingServiceAdmin(admin.ModelAdmin):
+class BookingServiceAdmin(ExportMixin, admin.ModelAdmin):
     list_display = ("id", "service_link", "booking_link", "booking_date", "return_date")
     search_fields = ("service_id__name", "booking_id__booking_id")
     list_display_links = ("service_link", "booking_link")
@@ -699,8 +834,25 @@ class BookingServiceAdmin(admin.ModelAdmin):
         return "-"
 
 
+class PaymentResource(resources.ModelResource):
+    booking = fields.Field(column_name="Бронирование", attribute="booking")
+    amount = fields.Field(column_name="Сумма к оплате", attribute="amount")
+    payment_date = fields.Field(column_name="Дата", attribute="payment_date")
+    payment_method = fields.Field(
+        column_name="Способ оплаты", attribute="payment_method"
+    )
+
+    class Meta:
+        model = Payment
+        fields = ("id", "booking", "amount", "payment_date", "payment_method")
+        export_order = fields
+        verbose_name_rus = "Платежи"
+
+
 @admin.register(Payment)
-class PaymentAdmin(admin.ModelAdmin):
+class Payment(ExportMixin, admin.ModelAdmin):
+    resource_class = PaymentResource
+    formats = [CustomXLSXFormat]
     list_display = (
         "payment_id",
         "booking_link",
@@ -727,8 +879,20 @@ class PaymentAdmin(admin.ModelAdmin):
         return "-"
 
 
+class TagResource(resources.ModelResource):
+    name = fields.Field(column_name="Название", attribute="name")
+
+    class Meta:
+        model = Tag
+        fields = ("id", "name")
+        export_order = fields
+        verbose_name_rus = "Теги"
+
+
 @admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
+class TagAdmin(ExportMixin, admin.ModelAdmin):
+    resource_class = TagResource
+    formats = [CustomXLSXFormat]
     list_display = ("name",)
     search_fields = ("name",)
     list_filter = ("name",)
