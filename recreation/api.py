@@ -79,6 +79,13 @@ class ReviewViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [SearchFilter]
     search_fields = ["comment", "client_id__last_name"]
+    filter_backends = [SearchFilter, DjangoFilterBackend]  # Добавляем DjangoFilterBackend
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.query_params.get('user') == 'me' and self.request.user.is_authenticated:
+            queryset = queryset.filter(client_id__user=self.request.user)
+        return queryset
 
 
 class HouseHistoryViewSet(viewsets.ReadOnlyModelViewSet):
@@ -87,3 +94,4 @@ class HouseHistoryViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         house_id = self.kwargs["house_id"]
         return House.history.filter(id=house_id)
+

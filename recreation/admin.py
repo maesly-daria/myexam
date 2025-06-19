@@ -17,7 +17,6 @@ from .models import (
     BookingService,
     Client,
     CustomUser,
-    DZexam,
     Employee,
     Event,
     Facility,
@@ -735,20 +734,3 @@ class TagAdmin(admin.ModelAdmin):
     list_filter = ("name",)
     verbose_name = _("Тег")
     verbose_name_plural = _("Теги")
-
-
-@admin.register(DZexam)
-class DZexamAdmin(admin.ModelAdmin):
-    list_display = ("title", "created_at", "exam_date", "is_public")
-    search_fields = ("title", "users__email")
-    list_filter = ("is_public", "created_at")
-    filter_horizontal = ("users",)
-    date_hierarchy = "exam_date"
-
-    @admin.display(description="Изображение")
-    def image_preview(self, obj):
-        if obj.image:
-            return format_html(
-                '<img src="{}" style="max-height: 50px;" />', obj.image.url
-            )
-        return "-"

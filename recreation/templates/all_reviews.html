@@ -368,20 +368,29 @@
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-                        <form method="post" action="{% url 'review_add' %}">
+                        <form method="post" action="{% url 'review_add' %}" id="reviewForm">
                             {% csrf_token %}
                             <div class="modal-body">
+                                {% if messages %}
+                                <div class="alert alert-danger">
+                                    {% for message in messages %}
+                                        {{ message }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                
                                 <div class="form-group">
-                                    <label for="house_id">Коттедж</label>
+                                    <label for="house_id">Коттедж *</label>
                                     <select class="form-control" name="house_id" id="house_id" required>
                                         <option value="">Выберите коттедж</option>
                                         {% for house in houses %}
-                                            <option value="{{ house.house_id }}">{{ house.name }}</option>
+                                            <option value="{{ house.pk }}">{{ house.name }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
+                                
                                 <div class="form-group">
-                                    <label>Рейтинг</label>
+                                    <label>Рейтинг *</label>
                                     <div class="rating-stars">
                                         {% for i in "54321" %}
                                             <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" required>
@@ -389,8 +398,9 @@
                                         {% endfor %}
                                     </div>
                                 </div>
+                                
                                 <div class="form-group">
-                                    <label for="comment">Комментарий</label>
+                                    <label for="comment">Комментарий *</label>
                                     <textarea class="form-control" name="comment" id="comment" rows="4" required></textarea>
                                 </div>
                             </div>
@@ -404,51 +414,55 @@
             </div>
             {% endif %}
 
+            
+
             <!-- Список отзывов -->
-            <div class="reviews-container">
-                {% if page_obj %}
-                    {% for review in page_obj %}
-                    <div class="review-card">
-                        <div class="review-header">
-                            <div class="review-rating">
-                                {% for i in "12345" %}
-                                    {% if forloop.counter <= review.rating %}
-                                        <i class="fas fa-star"></i>
-                                    {% else %}
-                                        <i class="far fa-star"></i>
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
-                            <p class="review-cottage">Коттедж: {{ review.house_id.name }}</p>
-                            {% if user.is_authenticated and review.client_id.user == user %}
-                            <div class="review-actions">
-                                <a href="{% url 'review_edit' review.pk %}" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <a href="#" class="btn btn-sm btn-outline-danger delete-review" data-id="{{ review.pk }}">
-                                    <i class="fas fa-trash-alt"></i>
-                                </a>
-                            </div>
-                            {% endif %}
+           <div class="reviews-container">
+                {% for review in page_obj %}
+                <div class="review-card {% if review.is_mine %}my-review{% endif %}">
+                    <div class="review-header">
+                        <div class="review-rating">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= review.rating %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
                         </div>
-                        <p class="review-text">{{ review.comment|striptags|linebreaks }}</p>
-                        <div class="review-footer">
-                            <p class="review-author">
-                                - {{ review.client_id.last_name }} {{ review.client_id.first_name.0 }}.
-                            </p>
-                            <p class="review-date">{{ review.created_at|date:"d.m.Y" }}</p>
+                        
+                        {% if review.is_mine %}
+                        <div class="review-actions">
+                            <a href="{% url 'review_edit' review.pk %}" 
+                            class="btn btn-sm btn-outline-primary edit-review" 
+                            data-id="{{ review.pk }}">
+                                <i class="fas fa-edit"></i> Редактировать
+                            </a>
+                            <a href="{% url 'review_delete' review.pk %}" 
+                            class="btn btn-sm btn-outline-danger delete-review" 
+                            data-id="{{ review.pk }}">
+                                <i class="fas fa-trash-alt"></i> Удалить
+                            </a>
                         </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="alert alert-info">
-                        {% if user_filter %}
-                        У вас пока нет отзывов. Хотите <a href="#" data-toggle="modal" data-target="#reviewModal">оставить первый отзыв</a>?
-                        {% else %}
-                        Пока нет отзывов.
                         {% endif %}
                     </div>
-                {% endif %}
+                    
+                    <p class="review-text">{{ review.comment }}</p>
+                    
+                    <div class="review-footer">
+                        <p class="review-author">
+                            {{ review.client_id.user.username|default:review.client_id.first_name|default:"Аноним" }}
+                        </p>
+                        <p class="review-date">
+                            {{ review.created_at|date:"d.m.Y H:i" }}
+                        </p>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info">Пока нет отзывов</div>
+                </div>
+                {% endfor %}
             </div>
 
             <!-- Пагинация -->
@@ -611,6 +625,32 @@
                         alert('Ошибка: ' + xhr.responseJSON.message);
                     }
                 });
+            }
+        });
+        // Валидация формы перед отправкой
+        $('#reviewForm').submit(function(e) {
+            let isValid = true;
+            
+            // Проверяем выбран ли коттедж
+            if ($('#house_id').val() === '') {
+                alert('Пожалуйста, выберите коттедж');
+                isValid = false;
+            }
+            
+            // Проверяем выбран ли рейтинг
+            if (!$('input[name="rating"]:checked').val()) {
+                alert('Пожалуйста, укажите рейтинг');
+                isValid = false;
+            }
+            
+            // Проверяем заполнен ли комментарий
+            if ($('#comment').val().trim() === '') {
+                alert('Пожалуйста, напишите комментарий');
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
             }
         });
     });

@@ -65,7 +65,6 @@ urlpatterns = (
             "api/houses/<int:house_id>/history/",
             HouseHistoryViewSet.as_view({"get": "list"}),
         ),
-        path("DZexam/", views.dzexam_view, name="dzexam"),
     ]
     + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

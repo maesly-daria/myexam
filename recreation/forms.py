@@ -140,15 +140,15 @@ class ClientProfileForm(forms.ModelForm):
 class ReviewForm(forms.ModelForm):
     class Meta:
         model = Review
-        fields = ["house_id", "rating", "comment"]
+        fields = ['house_id', 'rating', 'comment']
         widgets = {
-            "comment": forms.Textarea(attrs={"rows": 5}),
+            'comment': forms.Textarea(attrs={'rows': 3}),
+            'rating': forms.Select(choices=[(i, i) for i in range(1, 6)])
         }
-
+        
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["house_id"].queryset = House.objects.all()
-        self.fields["house_id"].label = "Коттедж"
+        self.fields['house_id'].queryset = House.objects.filter(is_active=True)
 
 
 class LoginForm(forms.Form):
