@@ -208,7 +208,6 @@ def account(request):
     return render(request, "account.html", context)
 
 
-# def post_detail(request, slug, id=None):
 # Посты
 def post_detail(request, slug):
     post = get_object_or_404(Post, slug__iexact=slug)
@@ -242,15 +241,6 @@ def post_update(request, pk):
     else:
         form = PostForm(instance=post)
     return render(request, "blog/post_form.html", {"form": form})
-
-
-# @login_required
-# def post_delete(request, pk):
-#     post = get_object_or_404(Post, pk=pk)
-#     if request.method == "POST":
-#         post.delete()
-#         return redirect("post_list")
-#     return render(request, "blog/post_confirm_delete.html", {"post": post})
 
 
 def post_list(request):
@@ -683,31 +673,6 @@ def login_view(request):
     return render(request, "login.html")
 
 
-# def post_list(request):
-#     posts = Post.objects.select_related('author').prefetch_related('tags').filter(status='published')
-
-#     # Фильтрация
-#     search_query = request.GET.get('search', '')
-#     if search_query:
-#         posts = posts.filter(Q(title__icontains=search_query) | Q(body__icontains=search_query))
-
-#     # Пагинация
-#     paginator = Paginator(posts, 5)
-#     page_number = request.GET.get('page')
-#     try:
-#         page_obj = paginator.page(page_number)
-#     except PageNotAnInteger:
-#         page_obj = paginator.page(1)
-#     except EmptyPage:
-#         page_obj = paginator.page(paginator.num_pages)
-
-#     context = {
-#         'page_obj': page_obj,
-#         'search_query': search_query,
-#     }
-#     return render(request, 'blog/post_list.html', context)
-
-
 @login_required
 def post_delete(request, id):
     post = get_object_or_404(Post, id=id)
@@ -715,14 +680,6 @@ def post_delete(request, id):
         post.delete()
         return redirect("post_list")
     return render(request, "blog/post_confirm_delete.html", {"post": post})
-
-
-# def delete_old_posts(request):
-#     # Удалить посты старше 1 года
-#     old_posts = Post.objects.filter(publish__lt=timezone.now() - timedelta(days=365))
-#     deleted_count = old_posts.delete()[0]
-#     messages.success(request, f"Deleted {deleted_count} old posts")
-#     return redirect("post_list")
 
 
 def create_house(request):

@@ -236,18 +236,14 @@ class ClientResource(resources.ModelResource):
     full_name = fields.Field(
         column_name="ФИО", readonly=True, attribute="get_full_name"
     )
-    phone = fields.Field(column_name="Телефон", attribute="phone_number")
+    phone_number = fields.Field(column_name="Телефон", attribute="phone_number")
     email = fields.Field(column_name="Email", readonly=True)
-    document_status = fields.Field(column_name="Документ", readonly=True)
 
     class Meta:
         model = Client
         fields = ("id", "full_name", "email", "phone_number")
         export_order = fields
         verbose_name_rus = "Клиенты"
-
-    # def get_export_headers(self):
-    #     return ['ID', 'ФИО', 'Email', 'Телефон']
 
     def dehydrate_full_name(self, client):
         return (

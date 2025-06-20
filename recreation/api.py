@@ -82,7 +82,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     filter_backends = [
         SearchFilter,
         DjangoFilterBackend,
-    ]  # Добавляем DjangoFilterBackend
+    ]
 
     def get_queryset(self):
         queryset = super().get_queryset()

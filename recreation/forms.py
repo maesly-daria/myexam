@@ -61,12 +61,6 @@ class CustomUserChangeForm(forms.ModelForm):
         max_length=12,
         required=True,
         label="Телефон",
-        # validators=[
-        #     RegexValidator(
-        #         regex=r'^\+7\d{10}$',
-        #         message='Введите телефон в формате: +7XXXXXXXXXX (без пробелов и скобок)'
-        #     )
-        # ],
         widget=forms.TextInput(
             attrs={"placeholder": "+7 (___) ___-__-__", "class": "phone-input"}
         ),
