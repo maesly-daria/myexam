@@ -383,7 +383,7 @@
                     <form method="POST" id="booking-form">
                         {% csrf_token %}
                         
-                        <!-- Детали бронирования (можно оставить как есть) -->
+                        <!-- Детали бронирования -->
                         <div class="card mb-4">
                             <div class="card-body">
                                 <h3 class="section-title card-title">Ваше бронирование</h3>
@@ -403,7 +403,7 @@
                                     </div>
                                 {% endif %}
                                 
-                                <!-- Вот этот новый блок -->
+                                <!-- новый блок -->
                                 {% for field in form %}
                                     {% if field.name != 'services' %}
                                     <div class="form-group">
@@ -482,7 +482,6 @@
                         <a href="/cottages/">Коттеджи</a>
                         <a href="/booking/">Бронирование</a>
                         <a href="/reviews/">Отзывы</a>
-                        <a href="/about/">О нас</a>
                     </div>
                 </div>
                 

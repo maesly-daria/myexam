@@ -153,11 +153,15 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
 
+        .amenities-list ul {
+            list-style-type: none; /* Убираем маркеры списка */
+            padding-left: 0; /* Убираем отступ слева */
+        }
+
         .amenities-list li {
-            padding: 8px 0;
             position: relative;
-            padding-left: 30px;
-            font-size: 16px;
+            padding-left: 25px; /* Отступ для галочки */
+            margin-bottom: 8px;
         }
 
         .amenities-list li:before {
@@ -307,15 +311,19 @@
                     <p class="cottage-description">
                         {{ cottage.description|linebreaksbr }}
                     </p>
-                    
+                    <br>
                     <h3 class="mb-3">Оснащение:</h3>
-                    <ul class="amenities-list">
-                        {% for amenity in amenities_list %}
-                            {% if amenity.strip %}
+                    <div class="amenities-list">
+                        {% if amenities_list %}
+                        <ul>
+                            {% for amenity in amenities_list %}
+                                {% if amenity.strip %}
                                 <li>{{ amenity.strip }}</li>
-                            {% endif %}
-                        {% endfor %}
-                    </ul>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
                     
                     <div class="gallery mt-5">
                         <h3 class="mb-4">Галерея</h3>

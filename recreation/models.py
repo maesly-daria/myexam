@@ -295,6 +295,8 @@ class House(models.Model):
     location = models.CharField(max_length=200, verbose_name="Местоположение")
     capacity = models.IntegerField(verbose_name="Вместимость (чел.)")
     price_per_night = models.IntegerField(verbose_name="Цена за ночь (руб.)")
+    description = models.TextField(verbose_name="Описание", blank=True, null=True)
+    amenities = models.TextField(verbose_name="Удобства", blank=True, null=True)
     image = models.ImageField(
         upload_to="houses/", verbose_name="Изображение", blank=True, null=True
     )
@@ -485,9 +487,7 @@ class Booking(models.Model):
     total_cost = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name="Общая стоимость"
     )
-    created_at = models.DateTimeField(
-        null=True, verbose_name="Дата создания"  # Remove 'default' if present
-    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     services = models.ManyToManyField(
         "Service", blank=True, verbose_name="Дополнительные услуги"
     )
@@ -499,6 +499,22 @@ class Booking(models.Model):
         return (self.check_out_date - self.check_in_date).days
 
     def clean(self):
+        # Проверяем, что все обязательные поля заполнены
+        if not all([self.check_in_date, self.check_out_date, self.guests, self.house]):
+            missing_fields = []
+            if not self.check_in_date:
+                missing_fields.append("дата заезда")
+            if not self.check_out_date:
+                missing_fields.append("дата выезда")
+            if not self.guests:
+                missing_fields.append("количество гостей")
+            if not self.house:
+                missing_fields.append("коттедж")
+
+            raise ValidationError(
+                f"Не заполнены обязательные поля: {', '.join(missing_fields)}"
+            )
+
         # 1. Проверка, что дата выезда > даты заезда
         if self.check_out_date <= self.check_in_date:
             raise ValidationError("Дата выезда должна быть позже даты заезда.")
@@ -507,11 +523,19 @@ class Booking(models.Model):
         if self.check_in_date < timezone.now().date():
             raise ValidationError("Нельзя бронировать коттедж на прошедшую дату.")
 
-        # 3. Проверка вместимости (количество гостей <= capacity дома)
-        if self.guests > self.house.capacity:
-            raise ValidationError(
-                f"Превышена вместимость коттеджа (макс. {self.house.capacity} гостей)."
-            )
+        # 3. Проверяем количество гостей
+        if not hasattr(self, "guests") or self.guests is None:
+            raise ValidationError("Не указано количество гостей")
+
+        if self.guests < 1:
+            raise ValidationError("Количество гостей должно быть не менее 1")
+
+        # 4. Проверяем вместимость дома
+        if hasattr(self.house, "capacity") and self.house.capacity:
+            if self.guests > self.house.capacity:
+                raise ValidationError(
+                    f"Количество гостей ({self.guests}) превышает вместимость коттеджа ({self.house.capacity})"
+                )
 
     def save(self, *args, **kwargs):
         self.full_clean()  # Автоматически вызывает clean() перед сохранением

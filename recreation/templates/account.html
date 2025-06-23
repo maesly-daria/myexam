@@ -27,6 +27,10 @@
             line-height: 1.6;
         }
         
+        hr {
+            color: brown;
+        }
+
          /* Header */
         .navbar {
             background-color: var(--secondary-color) !important;
@@ -204,6 +208,10 @@
             font-size: 50px;
             color: var(--secondary-color);
             margin-bottom: 15px;
+        }
+
+        .booking {
+            color: white;
         }
 
         /* Footer */
@@ -402,191 +410,176 @@
             
             <!-- Основной контент -->
             <div class="col-md-8 mx-auto">
-                <div class="card">
-                    <div class="card-header bg-primary-color text-white">
-                        <h4>Редактирование профиля</h4>
-                    </div>
-                    <div class="card-body">
-                            
-                            {% if messages %}
-                                {% for message in messages %}
-                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                                        {{ message }}
-                                        <button type="button" class="close" data-dismiss="alert">
-                                            <span>&times;</span>
-                                        </button>
-                                    </div>
-                                {% endfor %}
-                            {% endif %}
-
-                            {{ form.media }}
-                            <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
-                                {% csrf_token %}
-                                {% comment %} {{ form.as_p }} {% endcomment %}
-                                <!-- Вывод общих ошибок -->
-                                {% if form.errors %}
-                                <div class="alert alert-danger">
-                                    <ul class="mb-0">
-                                        {% for field, errors in form.errors.items %}
-                                            {% for error in errors %}
-                                                <li>{{ error }}</li>
-                                            {% endfor %}
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                                {% endif %}
+                <div class="tab-content">
+                    <div class="card">
+                        <div class="card-header bg-primary-color text-white">
+                            <h4>Редактирование профиля</h4>
+                        </div>
+                        <div class="card-body">
                                 
-                                <!-- Персональные данные -->
-                                <div class="form-row mb-4">
-                                    <div class="col-md-4 mb-3">
-                                        <label for="id_last_name">Фамилия*</label>
-                                        {{ form.last_name }}
-                                        <div class="invalid-feedback">
-                                            {{ form.last_name.errors }}
+                                {% if messages %}
+                                    {% for message in messages %}
+                                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                            {{ message }}
+                                            <button type="button" class="close" data-dismiss="alert">
+                                                <span>&times;</span>
+                                            </button>
                                         </div>
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label for="id_first_name">Имя*</label>
-                                        {{ form.first_name }}
-                                        <div class="invalid-feedback">
-                                            {{ form.first_name.errors }}
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label for="id_patronymic">Отчество*</label>
-                                        {{ form.patronymic }}
-                                    </div>
-                                </div>
+                                    {% endfor %}
+                                {% endif %}
 
-                                <div class="form-row mb-4">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="id_email">Email*</label>
-                                        {{ form.email }}
-                                        <small class="form-text text-muted">Изменить email нельзя</small>
+                                {{ form.media }}
+                                <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                                    {% csrf_token %}
+                                    {% comment %} {{ form.as_p }} {% endcomment %}
+                                    <!-- Вывод общих ошибок -->
+                                    {% if form.errors %}
+                                    <div class="alert alert-danger">
+                                        <ul class="mb-0">
+                                            {% for field, errors in form.errors.items %}
+                                                {% for error in errors %}
+                                                    <li>{{ error }}</li>
+                                                {% endfor %}
+                                            {% endfor %}
+                                        </ul>
                                     </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="id_phone_number">Телефон*</label>
-                                        {{ form.phone_number }}
-                                        <div class="invalid-feedback">
-                                            {{ form.phone_number.errors }}
-                                        </div>
-                                    </div>
-                                    {% comment %}</div> {% endcomment %}
-                                    <!-- Документ -->
-                                    <div class="form-group mb-4">
-                                        <label for="id_document">Документ</label>
-                                        {% if client.document %}
-                                            <div class="mb-2 d-flex align-items-center">
-                                                <a href="{{ client.document.url }}" target="_blank" class="mr-3">
-                                                    <i class="fas fa-file-pdf"></i> Текущий документ
-                                                </a>
-                                                <div class="form-check">
-                                                    <input type="checkbox" name="document-clear" id="document-clear" class="form-check-input">
-                                                    <label for="document-clear" class="form-check-label text-danger">Удалить</label>
-                                                </div>
+                                    {% endif %}
+                                    
+                                    <!-- Персональные данные -->
+                                    <div class="form-row mb-4">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="id_last_name">Фамилия*</label>
+                                            {{ form.last_name }}
+                                            <div class="invalid-feedback">
+                                                {{ form.last_name.errors }}
                                             </div>
-                                        {% endif %}
-                                        <div class="custom-file">
-                                            <input type="file" name="document" id="id_document" class="custom-file-input">
-                                            <label class="custom-file-label" for="id_document">Выберите файл...</label>
                                         </div>
-                                        <small class="form-text text-muted">PDF, JPG или PNG (макс. 5MB)</small>
-                                        {{ form.document.errors }}
+                                        <div class="col-md-4 mb-3">
+                                            <label for="id_first_name">Имя*</label>
+                                            {{ form.first_name }}
+                                            <div class="invalid-feedback">
+                                                {{ form.first_name.errors }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="id_patronymic">Отчество*</label>
+                                            {{ form.patronymic }}
+                                        </div>
                                     </div>
 
-                                    <button type="submit" class="btn btn-primary btn-lg btn-block">
-                                        <i class="fas fa-save"></i> Сохранить изменения
+                                    <div class="form-row mb-4">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="id_email">Email*</label>
+                                            {{ form.email }}
+                                            <small class="form-text text-muted">Изменить email нельзя</small>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="id_phone_number">Телефон*</label>
+                                            {{ form.phone_number }}
+                                            <div class="invalid-feedback">
+                                                {{ form.phone_number.errors }}
+                                            </div>
+                                        </div>
+                                        {% comment %}</div> {% endcomment %}
+                                        <!-- Документ -->
+                                        <div class="form-group mb-4">
+                                            <label for="id_document">Документ</label>
+                                            {% if client.document %}
+                                                <div class="mb-2 d-flex align-items-center">
+                                                    <a href="{{ client.document.url }}" target="_blank" class="mr-3">
+                                                        <i class="fas fa-file-pdf"></i> Текущий документ
+                                                    </a>
+                                                    <div class="form-check">
+                                                        <input type="checkbox" name="document-clear" id="document-clear" class="form-check-input">
+                                                        <label for="document-clear" class="form-check-label text-danger">Удалить</label>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                            <div class="custom-file">
+                                                <input type="file" name="document" id="id_document" class="custom-file-input">
+                                                <label class="custom-file-label" for="id_document">Выберите файл...</label>
+                                            </div>
+                                            <small class="form-text text-muted">PDF, JPG или PNG (макс. 5MB)</small>
+                                            {{ form.document.errors }}
+                                        </div>
+
+                                        <button type="submit" class="btn btn-primary btn-lg btn-block">
+                                            <i class="fas fa-save"></i> Сохранить изменения
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="text-center mt-4">
+                                <form method="post" action="{% url 'logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="fas fa-sign-out-alt mr-2"></i> Выйти
                                     </button>
                                 </form>
                             </div>
-                            <div class="text-center mt-4">
-                            <form method="post" action="{% url 'logout' %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-danger">
-                                    <i class="fas fa-sign-out-alt mr-2"></i> Выйти
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                    
-                    <!-- Вкладка бронирований -->
-                    <div class="tab-pane fade" id="bookings">
-                        <div class="account-container p-4">
-                            <h3 class="section-title">
-                                <i class="fas fa-history mr-2"></i> История бронирований
-                            </h3>
-                            
-                            {% if bookings %}
-                                <div class="row">
-                                    {% for booking in bookings %}
-                                    <div class="col-12 mb-3">
-                                        <div class="booking-card p-4">
-                                            <div class="row align-items-center">
-                                                <div class="col-md-4 mb-3 mb-md-0">
-                                                    <h5 class="mb-1">{{ booking.house.name }}</h5>
-                                                    <p class="mb-0 text-muted">
-                                                        <i class="fas fa-users mr-1"></i> 
-                                                        {{ booking.guests }} чел.
-                                                    </p>
-                                                    {% if booking.services.exists %}
-                                                    <div class="mt-2">
-                                                        <small class="text-muted">Услуги:</small>
-                                                        <ul class="list-unstyled mb-0">
-                                                            {% for service in booking.services.all %}
-                                                            <li class="small">{{ service.name }} - {{ service.price }} ₽</li>
-                                                            {% endfor %}
-                                                        </ul>
-                                                    </div>
-                                                    {% endif %}
-                                                </div>
-                                                <div class="col-md-3 mb-3 mb-md-0">
-                                                    <p class="mb-1">
-                                                        <i class="far fa-calendar-alt mr-1"></i> 
-                                                        {{ booking.check_in_date|date:"d.m.Y" }}
-                                                    </p>
-                                                    <p class="mb-0">
-                                                        <i class="fas fa-calendar-times mr-1"></i> 
-                                                        {{ booking.check_out_date|date:"d.m.Y" }}
-                                                    </p>
-                                                </div>
-                                                <div class="col-md-3 mb-3 mb-md-0">
-                                                    <p class="mb-1 font-weight-bold">
-                                                        {{ booking.total_cost }} руб.
-                                                    </p>
-                                                    <p class="mb-0">
-                                                        {{ booking.nights }} ночей
-                                                    </p>
-                                                </div>
-                                                <div class="col-md-2 text-md-right">
-                                                    <span class="booking-status {% if booking.check_out_date > now %}status-active{% else %}status-completed{% endif %}">
-                                                        {% if booking.check_out_date > now %}
-                                                            Активно
-                                                        {% else %}
-                                                            Завершено
-                                                        {% endif %}
+                        <hr></div>
+
+                        <!-- Вкладка бронирований -->
+                        <div class="tab-pane fade show active" id="bookings">
+                            {% comment %} <div class="account-container p-4"> {% endcomment %}
+                                <div class="card">
+                                    <div class="card-header booking">
+                                        <h4><i class="fas fa-calendar-alt mr-2"></i> Мои бронирования</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        {% if bookings %}
+                                        <div class="list-group">
+                                            {% for booking in bookings %}
+                                            <div class="list-group-item mb-3">
+                                                <div class="d-flex justify-content-between">
+                                                    <h5>{{ booking.house.name }}</h5>
+                                                    <span class="badge {% if booking.check_out_date > now %}bg-success{% else %}bg-secondary{% endif %}">
+                                                        {% if booking.check_out_date > now %}Активно{% else %}Завершено{% endif %}
                                                     </span>
                                                 </div>
+                                                <p class="mb-1">
+                                                    <i class="far fa-calendar-alt mr-2"></i>
+                                                    {{ booking.check_in_date|date:"d.m.Y" }} → {{ booking.check_out_date|date:"d.m.Y" }}
+                                                    ({{ booking.nights }} ночей)
+                                                </p>
+                                                <p class="mb-1">
+                                                    <i class="fas fa-users mr-2"></i>
+                                                    {{ booking.guests }} гостей
+                                                </p>
+                                                <p class="mb-1">
+                                                    <i class="fas fa-ruble-sign mr-2"></i>
+                                                    Итого: {{ booking.total_cost }} руб.
+                                                </p>
+                                                {% if booking.services.exists %}
+                                                <div class="mt-2">
+                                                    <small class="text-muted">Доп. услуги:</small>
+                                                    <ul class="list-unstyled">
+                                                        {% for service in booking.services.all %}
+                                                        <li>{{ service.name }} ({{ service.price }} руб.)</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                                {% endif %}
                                             </div>
+                                            {% endfor %}
                                         </div>
+                                    {% else %}
+                                        <div class="text-center py-4">
+                                            <i class="far fa-calendar-times fa-3x text-muted mb-3"></i>
+                                            <h5>У вас нет бронирований</h5>
+                                            <a href="{% url 'cottages' %}" class="btn btn-primary mt-2">
+                                                <i class="fas fa-search mr-2"></i> Найти коттедж
+                                            </a>
+                                        </div>
+                                    {% endif %}
                                     </div>
-                                    {% endfor %}
                                 </div>
-                            {% else %}
-                                <div class="no-bookings">
-                                    <i class="far fa-calendar-times"></i>
-                                    <h4 class="mb-3">У вас пока нет бронирований</h4>
-                                    <p>Найдите подходящий коттедж и забронируйте отдых своей мечты!</p>
-                                    <a href="{% url 'cottages' %}" class="btn btn-primary mt-3">
-                                        <i class="fas fa-search mr-2"></i> Найти коттедж
-                                    </a>
-                                </div>
-                            {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </div> 
 
      <!-- Footer -->
     <footer class="footer">
@@ -747,6 +740,40 @@
             $('#profile-form').on('submit', function() {
                 $('.phone-input').unmask();
                 return true;
+            });
+
+            // Активация вкладок при нажатии на сайдбар
+            $('.nav-pills a').click(function(e) {
+                e.preventDefault();
+                $(this).tab('show');
+            });
+
+            // Если в URL есть #bookings, открываем вкладку бронирований
+            if (window.location.hash === '#bookings') {
+                $('.nav-pills a[href="#bookings"]').tab('show');
+            }
+
+            // Инициализация вкладок
+            $('.nav-pills a').click(function(e) {
+                e.preventDefault();
+                $(this).tab('show');
+                
+                // Обновляем URL без перезагрузки страницы
+                history.pushState(null, null, $(this).attr('href'));
+            });
+
+            // Активируем вкладку из URL при загрузке
+            var activeTab = window.location.hash;
+            if (activeTab) {
+                $('.nav-pills a[href="' + activeTab + '"]').tab('show');
+            }
+
+            // Обработка кнопки назад/вперед браузера
+            $(window).on('popstate', function() {
+                var activeTab = window.location.hash;
+                if (activeTab) {
+                    $('.nav-pills a[href="' + activeTab + '"]').tab('show');
+                }
             });
         });
     </script>

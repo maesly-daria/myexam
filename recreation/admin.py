@@ -303,9 +303,7 @@ class CustomXLSXFormat(XLSX):
 class HouseResource(resources.ModelResource):
     name = fields.Field(column_name="Название", attribute="name")
     price = fields.Field(column_name="Цена за ночь (руб)")
-    capacity = fields.Field(
-        column_name="Вместимость", attribute="capacity"  # Теперь точно берем из модели
-    )
+    capacity = fields.Field(column_name="Вместимость", attribute="capacity")
     location = fields.Field(column_name="Местоположение")
     address_specified = fields.Field(column_name="Адрес указан")
     manager = fields.Field(column_name="Менеджер")
@@ -383,14 +381,17 @@ class HouseAdmin(ExportMixin, admin.ModelAdmin):
     fieldsets = (
         (
             "Основная информация",
-            {"fields": ("name", "slug", "employee_id", "is_active")},
+            {"fields": ("name", "slug", "description", "is_active")},
         ),
-        ("Характеристики", {"fields": ("location", "capacity", "price_per_night")}),
         (
-            "Медиа и описание",
+            "Характеристики",
+            {"fields": ("location", "capacity", "price_per_night", "amenities")},
+        ),
+        (
+            "Медиа",
             {
-                "fields": ("image", "image_preview", "description", "amenities"),
-                "classes": ("collapse",),
+                "fields": ("image", "image_preview"),
+                "classes": ("collapse"),
             },
         ),
     )

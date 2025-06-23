@@ -7,7 +7,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
-from django.utils import timezone
 
 from .models import Booking, Client, CustomUser, House, Post, Review, Service
 
@@ -295,118 +294,101 @@ class BookingForm(forms.ModelForm):
         label="ФИО",
         max_length=200,
         required=True,
-        widget=forms.TextInput(
-            attrs={"class": "form-control", "placeholder": "Иванов Иван Иванович"}
-        ),
+        widget=forms.TextInput(attrs={"class": "form-control"}),
     )
     email = forms.EmailField(
         label="Email",
         required=True,
-        widget=forms.EmailInput(
-            attrs={"class": "form-control", "placeholder": "example@mail.ru"}
-        ),
+        widget=forms.EmailInput(attrs={"class": "form-control"}),
     )
     phone_number = forms.CharField(
         label="Телефон",
         max_length=20,
         required=True,
-        widget=forms.TextInput(
-            attrs={"class": "form-control", "placeholder": "+7 (___) ___-__-__"}
-        ),
-        validators=[
-            RegexValidator(
-                regex=r"^\+7\d{10}$",
-                message="Телефон должен быть в формате +7XXXXXXXXXX",
-            )
-        ],
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+        validators=[RegexValidator(regex=r"^\+7\d{10}$")],
     )
     services = forms.ModelMultipleChoiceField(
         queryset=Service.objects.all(),
         widget=forms.CheckboxSelectMultiple,
         required=False,
-        label="Дополнительные услуги",
     )
+    # check_in_date = forms.DateField(widget=forms.HiddenInput())
+    # check_out_date = forms.DateField(widget=forms.HiddenInput())
+    # guests = forms.IntegerField(widget=forms.HiddenInput())
 
     class Meta:
         model = Booking
-        fields = ["client_name", "phone_number", "email", "comment", "services"]
+        fields = ["client_name", "email", "phone_number", "services", "comment"]
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
+        self.house = kwargs.pop("house", None)
         super().__init__(*args, **kwargs)
-        self.fields["services"].queryset = Service.objects.all()
 
         if self.user and self.user.is_authenticated:
+            self.fields["client_name"].initial = self.user.get_full_name()
             self.fields["email"].initial = self.user.email
             if hasattr(self.user, "phone"):
                 self.fields["phone_number"].initial = self.user.phone
 
-            name_parts = [
-                self.user.last_name or "",
-                self.user.first_name or self.user.username,
-                self.user.patronymic or "",
-            ]
-            self.fields["client_name"].initial = " ".join(
-                part for part in name_parts if part
-            ).strip()
-
     def clean(self):
         cleaned_data = super().clean()
-        if cleaned_data.get("check_out_date") <= cleaned_data.get("check_in_date"):
-            self.add_error(
-                "check_out_date", "Дата выезда должна быть позже даты заезда."
+
+        # Проверяем что house передан
+        if not self.house:
+            raise ValidationError("Не указан коттедж для бронирования")
+
+        # Проверяем что даты переданы
+        check_in_date = cleaned_data.get("check_in_date")
+        check_out_date = cleaned_data.get("check_out_date")
+        guests = cleaned_data.get("guests")
+
+        if not all([check_in_date, check_out_date, guests]):
+            missing = []
+            if not check_in_date:
+                missing.append("дата заезда")
+            if not check_out_date:
+                missing.append("дата выезда")
+            if not guests:
+                missing.append("количество гостей")
+            raise ValidationError(f"Не заполнены: {', '.join(missing)}")
+
+        # Проверяем количество гостей
+        if guests < 1:
+            raise ValidationError("Количество гостей должно быть не менее 1")
+
+        # Проверка вместимости
+        if self.house and self.house.capacity and guests > self.house.capacity:
+            raise ValidationError(
+                f"Коттедж вмещает максимум {self.house.capacity} гостей"
             )
-
-        if self.user and self.user.is_authenticated:
-            if cleaned_data.get("email") != self.user.email:
-                self.add_error("email", "Email должен соответствовать вашему аккаунту")
-            cleaned_data["client_name"] = self._get_full_name()
-
-        phone = cleaned_data.get("phone_number")
-        if phone:
-            cleaned_data["phone_number"] = re.sub(r"[^\d+]", "", phone)
 
         return cleaned_data
 
-    def clean_check_in_date(self):
-        date = self.cleaned_data["check_in_date"]
-        if date < timezone.now().date():
-            raise ValidationError("Нельзя бронировать на прошедшую дату")
-        return date
-
-    def _get_full_name(self):
-        """Возвращает полное ФИО пользователя"""
-        if self.user:
-            parts = [
-                self.user.last_name,
-                self.user.username,
-                self.user.patronymic or "",
-            ]
-            return " ".join(filter(None, parts)).strip()
-        return ""
-
     def save(self, commit=True):
-        instance = super().save(commit=False)
+        # Создаем экземпляр бронирования, но пока не сохраняем в базу (commit=False)
+        booking = super().save(commit=False)
 
-        if self.user and self.user.is_authenticated:
-            instance.user = self.user
-            client, created = Client.objects.update_or_create(
-                user=self.user,
-                defaults={
-                    "last_name": self.user.last_name,
-                    "first_name": self.user.username,
-                    "patronymic": self.user.patronymic,
-                    "email": self.user.email,
-                    "phone_number": self.cleaned_data["phone_number"],
-                },
-            )
-            instance.client_id = client
+        # Устанавливаем дополнительные поля, которые не входят в форму
+        booking.user = self.user
+        booking.house = self.house
 
+        # Получаем даты и количество гостей из cleaned_data
+        booking.check_in_date = self.cleaned_data["check_in_date"]
+        booking.check_out_date = self.cleaned_data["check_out_date"]
+        booking.guests = self.cleaned_data["guests"]
+
+        # Рассчитываем стоимость
+        nights = (booking.check_out_date - booking.check_in_date).days
+        booking.total_cost = self.house.price_per_night * nights
+
+        # Если нужно сохранить (по умолчанию True)
         if commit:
-            instance.save()
-            self.save_m2m()
+            booking.save()  # Сначала сохраняем основную модель
+            self.save_m2m()  # Затем сохраняем many-to-many отношения (услуги)
 
-        return instance
+        return booking
 
 
 class ClientRegistrationForm(UserCreationForm):

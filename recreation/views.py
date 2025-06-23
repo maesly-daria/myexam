@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
@@ -150,28 +150,28 @@ def account_view(request):
             phone_number=request.user.phone or "",
         )
 
-    if request.method == "POST" and "logout" in request.POST:
-        logout(request)
-        return redirect("home")
+    # Получаем бронирования текущего пользователя
+    bookings = Booking.objects.filter(user=request.user).select_related("house")
 
+    if request.method == "POST":
         form = ClientForm(request.POST, request.FILES, instance=client)
         if form.is_valid():
-            # Обработка удаления документа
-            if (
-                "document-clear" in request.POST
-                and request.POST["document-clear"] == "on"
-            ):
-                client.document.delete(save=False)
-
             form.save()
             messages.success(request, "Профиль успешно обновлен")
             return redirect("account")
-        else:
-            messages.error(request, "Пожалуйста, исправьте ошибки в форме")
     else:
         form = ClientForm(instance=client)
 
-    return render(request, "account.html", {"form": form, "client": client})
+    return render(
+        request,
+        "account.html",
+        {
+            "form": form,
+            "client": client,
+            "bookings": bookings,
+            "now": timezone.now().date(),  # Для проверки активных бронирований
+        },
+    )
 
 
 def account(request):
@@ -363,8 +363,7 @@ def cottage_detail(request, slug):
     # 1. Похожие коттеджи (те же удобства или цена в том же диапазоне)
     similar_houses = (
         House.objects.filter(
-            Q(amenities__icontains=cottage.amenities.split("\n")[0])  # Первое удобство
-            | Q(
+            Q(
                 price_per_night__range=(
                     cottage.price_per_night * 0.8,
                     cottage.price_per_night * 1.2,
@@ -395,6 +394,7 @@ def cottage_detail(request, slug):
         return JsonResponse(data)
 
     amenities_list = cottage.amenities.split("\n") if cottage.amenities else []
+
     return render(
         request,
         "cottage_detail.html",
@@ -402,7 +402,7 @@ def cottage_detail(request, slug):
             "cottage": cottage,
             "similar_houses": similar_houses,
             "recommended_services": recommended_services,
-            "image_url": cottage.get_image_url(),
+            "image_url": cottage.get_image_url,
             "image_exists": cottage.image_exists(),
             "amenities_list": amenities_list,
         },
@@ -415,59 +415,95 @@ def booking(request):
     check_out = request.GET.get("check_out")
     guests = request.GET.get("guests", 2)
 
+    # Проверка параметров
     if not all([house_id, check_in, check_out]):
+        messages.error(request, "Необходимо указать дом, дату заезда и дату выезда")
         return redirect("cottages")
 
     try:
+        # Преобразование и валидация дат
         house = House.objects.get(pk=house_id)
         check_in_date = datetime.strptime(check_in, "%Y-%m-%d").date()
         check_out_date = datetime.strptime(check_out, "%Y-%m-%d").date()
-        nights = (check_out_date - check_in_date).days
-        house_cost = house.price_per_night * nights
+        today = timezone.now().date()
 
-        if check_in_date >= check_out_date:
+        # Дополнительные проверки дат
+        if check_in_date < today:
+            messages.error(request, "Дата заезда не может быть в прошлом")
+            return redirect("cottages")
+
+        if check_out_date <= check_in_date:
             messages.error(request, "Дата выезда должна быть позже даты заезда")
             return redirect("cottages")
 
-    except (House.DoesNotExist, ValueError):
+        nights = (check_out_date - check_in_date).days
+        house_cost = house.price_per_night * nights
+
+    except House.DoesNotExist:
+        messages.error(request, "Указанный коттедж не найден")
+        return redirect("cottages")
+    except ValueError:
+        messages.error(request, "Некорректный формат даты. Используйте YYYY-MM-DD")
         return redirect("cottages")
 
+    # Обработка формы
     if request.method == "POST":
-        form = BookingForm(request.POST, user=request.user)
+        form = BookingForm(
+            request.POST,
+            user=request.user,
+            house=house,
+            initial={
+                "check_in_date": check_in_date,
+                "check_out_date": check_out_date,
+                "guests": guests,
+            },
+        )
+
         if form.is_valid():
+            logger.info("Форма валидна")
             try:
                 with transaction.atomic():
                     booking = form.save(commit=False)
-                    # ... existing booking setup code ...
+                    booking.house = house
+                    booking.total_cost = house_cost
 
-                    # Get selected services
-                    selected_services = form.cleaned_data.get("services", [])
-                    if selected_services:
-                        service_cost = sum(s.price for s in selected_services)
-                        booking.total_cost += service_cost
+                    # Добавляем стоимость услуг
+                    services = form.cleaned_data.get("services", [])
+                    if services:
+                        booking.total_cost += sum(s.price for s in services)
 
                     booking.save()
-                    booking.services.set(selected_services)  # Set the services
+                    booking.services.set(services)
 
+                    # Перенаправляем на страницу оплаты с ID бронирования
                     return redirect("payment", booking_id=booking.id)
+
             except Exception as e:
-                messages.error(request, f"Ошибка при бронировании: {str(e)}")
-                logger.error(f"Booking error: {str(e)}", exc_info=True)
+                messages.error(request, "Ошибка при создании бронирования")
+                logger.error(
+                    f"Booking error for user {request.user.id}: {str(e)}", exc_info=True
+                )
     else:
-        form = BookingForm(user=request.user)
-        selected_services = []
+        form = BookingForm(
+            initial={
+                "check_in_date": check_in_date,
+                "check_out_date": check_out_date,
+                "guests": guests,
+            },
+            user=request.user,
+            house=house,
+        )
 
     return render(
         request,
         "booking.html",
         {
+            "form": form,
             "house": house,
             "check_in": check_in_date,
             "check_out": check_out_date,
-            "guests": guests,
             "nights": nights,
             "house_cost": house_cost,
-            "form": form,
             "services": Service.objects.all(),
         },
     )
@@ -479,13 +515,12 @@ def payment(request, booking_id):
         booking = Booking.objects.select_related("house_id", "client_id").get(
             pk=booking_id
         )
+        nights = (booking.check_out_date - booking.check_in_date).days
+        services = booking.services.all()
 
         # Проверка прав доступа
         if booking.user != request.user:
             raise Http404("Бронирование не найдено")
-
-        nights = (booking.check_out_date - booking.check_in_date).days
-        services = booking.services.all()
 
         return render(
             request,
